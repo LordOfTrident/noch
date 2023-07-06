@@ -1,0 +1,29 @@
+<p align="center">
+	<img width="300px" src="./res/logo.png">
+</p>
+<p align="center">
+	<a href="./LICENSE">
+		<img alt="License" src="https://img.shields.io/badge/license-MIT-26c374?style=for-the-badge">
+	</a>
+	<a href="https://github.com/LordOfTrident/noch/issues">
+		<img alt="Issues" src="https://img.shields.io/github/issues/LordOfTrident/noch?style=for-the-badge&color=4f79e4">
+	</a>
+	<a href="https://github.com/LordOfTrident/noch/pulls">
+		<img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/LordOfTrident/noch?style=for-the-badge&color=4f79e4">
+	</a>
+	<br><br><br>
+</p>
+
+**!THIS LIBRARY IS A WORK IN PROGRESS**
+
+Not chol, A collection of useful [C99](https://en.wikipedia.org/wiki/C99) libraries.
+
+## Table of contents
+* [Documentation](#documentation)
+* [Bugs](#bugs)
+
+## Documentation
+Hosted [here](https://lordoftrident.github.io/docs/noch/)
+
+## Bugs
+If you find any bugs, please create an issue and report them.
