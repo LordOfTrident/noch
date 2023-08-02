@@ -149,6 +149,10 @@ NOCH_DEF const char *u8_str_idx_to_ptr(const char *str, size_t idx) {
 		++ cur;
 		it += u8_rune_size(*it);
 	}
+
+	if (*it == '\0')
+		return it;
+
 	return NULL;
 }
 
