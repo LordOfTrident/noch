@@ -1,0 +1,12 @@
+colorer.h    Terminal output colors
+log.h        Logging
+common.h     Common functionality
+darray.h     Dynamic array
+hash.h       Hash map
+fs.h         Filesystem
+sv.h         String view
+builder.h    C project builder
+bytes.h      Byte manipulations
+region.h     Region allocator
+expr.h       Math expression evaluator
+ini.h        INI file parser

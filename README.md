@@ -14,7 +14,7 @@
 	<br><br><br>
 </p>
 
-**!THIS LIBRARY IS A WORK IN PROGRESS**
+**!THIS LIBRARY IS A WORK IN PROGRESS!**
 
 Not chol, A collection of useful [C99](https://en.wikipedia.org/wiki/C99) libraries.
 
@@ -23,6 +23,8 @@ Not chol, A collection of useful [C99](https://en.wikipedia.org/wiki/C99) librar
 * [Bugs](#bugs)
 
 ## Documentation
+**!MIGHT BE OUTDATED!**
+
 Hosted [here](https://lordoftrident.github.io/docs/noch/)
 
 ## Bugs

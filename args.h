@@ -17,68 +17,55 @@ extern "C" {
 #include "internal/alloc.h"
 #include "internal/assert.h"
 #include "internal/def.h"
+#include "internal/err.h"
 
-#ifndef NOCH_MAX_FLAG_NAME_LEN
-#	define NOCH_MAX_FLAG_NAME_LEN 128
+#ifndef MAX_FLAG_NAME_LEN
+#	define MAX_FLAG_NAME_LEN 128
 #endif
 
-NOCH_DEF bool noch_is_arg_flag     (const char *arg); /* -h, --help */
-NOCH_DEF bool noch_is_arg_long_flag(const char *arg); /* --help */
-NOCH_DEF bool noch_is_arg_flags_end(const char *arg); /* -- */
+#ifndef FLAGS_CAPACITY
+#	define FLAGS_CAPACITY 128
+#endif
 
-#define NOCH__FLAG_FUNC_DECL(POSTFIX, TYPE)                                          \
-	NOCH_DEF void noch_flag_##POSTFIX(const char *short_name, const char *long_name, \
-	                                  const char *desc, TYPE *var)
+NOCH_DEF bool arg_is_flag     (const char *arg); /* -h, --help */
+NOCH_DEF bool arg_is_long_flag(const char *arg); /* --help */
+NOCH_DEF bool arg_is_flags_end(const char *arg); /* -- */
 
-NOCH__FLAG_FUNC_DECL(str,  const char*);
-NOCH__FLAG_FUNC_DECL(char, char);
-NOCH__FLAG_FUNC_DECL(int,  int);
-NOCH__FLAG_FUNC_DECL(size, size_t);
-NOCH__FLAG_FUNC_DECL(num,  double);
-NOCH__FLAG_FUNC_DECL(bool, bool);
+#define DECL_FLAG_FUNC(POSTFIX, TYPE)                                           \
+	NOCH_DEF void flag_##POSTFIX(const char *short_name, const char *long_name, \
+	                             const char *desc, TYPE *var)
 
-typedef enum {
-	NOCH_ARGS_OK = 0,
+DECL_FLAG_FUNC(str,  const char*);
+DECL_FLAG_FUNC(char, char);
+DECL_FLAG_FUNC(int,  int);
+DECL_FLAG_FUNC(size, size_t);
+DECL_FLAG_FUNC(num,  double);
+DECL_FLAG_FUNC(bool, bool);
 
-	NOCH_ARGS_OUT_OF_MEM,
-	NOCH_ARGS_UNKNOWN_FLAG,
-	NOCH_ARGS_MISSING,
-	NOCH_ARGS_EXTRA,
-	NOCH_ARGS_EXPECTED_STR,
-	NOCH_ARGS_EXPECTED_CHAR,
-	NOCH_ARGS_EXPECTED_INT,
-	NOCH_ARGS_EXPECTED_SIZE,
-	NOCH_ARGS_EXPECTED_NUM,
-	NOCH_ARGS_EXPECTED_BOOL,
-
-	NOCH_ARGS_ERROR_COUNT,
-} noch_args_err_t;
-
-NOCH_DEF const char *noch_args_err_to_str(noch_args_err_t err);
+#undef DECL_FLAG_FUNC
 
 typedef struct {
 	size_t       c;
 	const char **v;
 	char       **base;
-} noch_args_t;
+} args_t;
 
-NOCH_DEF noch_args_t noch_args_new(int argc, const char **argv);
+NOCH_DEF args_t args_new(int argc, const char **argv);
 
-#define NOCH_FOREACH_IN_ARGS(ARGS, ARG_VAR, BODY)                                        \
-	do {                                                                                 \
-		for (int noch__foreach_i = 0; chol__foreach_i < (ARGS)->c; ++ chol__foreach_i) { \
-			const char *ARG_VAR = (ARGS)->v[chol__foreach_i];                            \
-			BODY                                                                         \
-		}                                                                                \
+#define FOREACH_IN_ARGS(ARGS, VAR, BODY)                                  \
+	do {                                                                  \
+		for (int _foreach_i = 0; _foreach_i < (ARGS)->c; ++ _foreach_i) { \
+			const char *VAR = (ARGS)->v[_foreach_i];                      \
+			BODY                                                          \
+		}                                                                 \
 	} while (0)
 
-NOCH_DEF const char     *noch_args_shift      (noch_args_t *args);
-NOCH_DEF noch_args_err_t noch_args_parse_flags(noch_args_t *args, size_t *where, size_t *end,
-                                               noch_args_t *stripped);
+NOCH_DEF const char *args_shift      (args_t *args);
+NOCH_DEF int         args_parse_flags(args_t *args, size_t *where, args_t *stripped, bool *extra);
 
-NOCH_DEF void noch_fprint_flags_usage(FILE *file);
-NOCH_DEF void noch_fprint_usage      (FILE *file, const char *name, const char **usages,
-                                      size_t usages_count, const char *desc, bool print_flags);
+NOCH_DEF void flags_usage_fprint(FILE *file);
+NOCH_DEF void args_usage_fprint (FILE *file, const char *name, const char **usages,
+                                 size_t usages_count, const char *desc, bool print_flags);
 
 #ifdef __cplusplus
 }

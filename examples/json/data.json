@@ -1,0 +1,23 @@
+/* Comment test */
+{
+	"key": "value",
+	"bool": true,
+
+	"unicode": "りゅう",
+	"unicode-escape": "Testing unicode: \u2588 \u2688",
+	"surrogate-pair": "\uD834\uDD1E",
+
+	"ansi-escape-sequence": "\u001B[32m",
+
+	"position": {
+		"x": 2.5,
+		"y": 4
+	},
+
+	"food": [
+		"pizza",
+		"salmon",
+		"pineapple",
+		"sandwich",
+	]
+}
