@@ -15,7 +15,7 @@ extern "C" {
 #include "platform.h"
 
 #ifdef PLATFORM_WINDOWS
-#	include "windows.h"
+#	include "win.h"
 #endif
 
 enum {

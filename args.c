@@ -421,12 +421,12 @@ NOCH_DEF void flags_usage_fprint(FILE *file) {
 
 		fprintf(file, " (default \"");
 		switch (flag->type) {
-		case FLAG_STR:  fprintf(file, "%s",  flag->default_val.str);  break;
-		case FLAG_CHAR: fprintf(file, "%c",  flag->default_val.ch);   break;
-		case FLAG_INT:  fprintf(file, "%i",  flag->default_val.int_); break;
-		case FLAG_SIZE: fprintf(file, "%zu", flag->default_val.size); break;
-		case FLAG_NUM:  fprintf(file, "%f",  flag->default_val.num);  break;
-		case FLAG_BOOL: fprintf(file, "true");                        break;
+		case FLAG_STR:  fprintf(file, "%s",  flag->default_val.str);                 break;
+		case FLAG_CHAR: fprintf(file, "%c",  flag->default_val.ch);                  break;
+		case FLAG_INT:  fprintf(file, "%i",  flag->default_val.int_);                break;
+		case FLAG_SIZE: fprintf(file, "%lu", (long unsigned)flag->default_val.size); break;
+		case FLAG_NUM:  fprintf(file, "%f",  flag->default_val.num);                 break;
+		case FLAG_BOOL: fprintf(file, "true");                                       break;
 
 		default: NOCH_ASSERT(0 && "Unknown flag type");
 		}

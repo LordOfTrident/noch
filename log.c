@@ -79,7 +79,7 @@ NOCH_DEF void set_log_flags(int flags) {
 static void i__log_reset_color(void) {
 	if (i__log_file_can_be_colored())
 #ifdef PLATFORM_WINDOWS
-		SetConsoleTextAttribute(i__log_file_to_win_handle(), i__orig_csbi.wAttributes);
+		SetConsoleTextAttribute(i__log_file_to_win_handle(), i__log_orig_csbi.wAttributes);
 #else
 		fputs("\x1b[0m", i__log_file);
 #endif
@@ -142,7 +142,7 @@ NOCH_DEF void log_generic(int color, const char *title, const char *path,
 		if (i__log_flags & LOG_FILE)
 			fprintf(i__log_file, "%s:", path);
 		else if (i__log_flags & LOG_LINE)
-			fprintf(i__log_file, "%zu:", line);
+			fprintf(i__log_file, "%lu:", (long unsigned)line);
 	}
 
 	char    str[1024];

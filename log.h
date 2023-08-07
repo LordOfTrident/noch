@@ -17,7 +17,7 @@ extern "C" {
 #include "platform.h"
 
 #ifdef PLATFORM_WINDOWS
-#	include "windows.h"
+#	include "win.h"
 #endif
 
 #define LOG_TIME_DATE (LOG_TIME | LOG_DATE)

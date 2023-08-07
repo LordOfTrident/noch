@@ -1,10 +1,10 @@
 #include <stdio.h>
 
-#include <log.h>
-#include <log.c>
+#include "../../log.h"
+#include "../../log.c"
 
 int main(void) {
-	set_log_file(stderr);
+	set_log_file(stdout);
 	set_log_flags(LOG_TIME_DATE | LOG_LOCATION);
 
 /* Custom logs */

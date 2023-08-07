@@ -1,13 +1,13 @@
 #include <stdio.h>
 
-#include <utf8.h>
-#include <utf8.c>
+#include "../../utf8.h"
+#include "../../utf8.c"
 
 int main(void) {
 	const char *str = "hello π \uE0B3 lol";
 
-	printf("Length: %zu\n", u8_str_len(str));
-	printf("Bytes: %zu\n",  u8_str_bytes(str));
+	printf("Length: %i\n", (int)u8_str_len(str));
+	printf("Bytes: %i\n",  (int)u8_str_bytes(str));
 
 	printf("Normal printing:\n\t");
 

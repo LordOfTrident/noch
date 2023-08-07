@@ -3,8 +3,8 @@
 #include <string.h> /* strcmp */
 #include <assert.h> /* assert */
 
-#include <args.h> /* Declarations */
-#include <args.c> /* Implementation */
+#include "../../args.h" /* Declarations */
+#include "../../args.c" /* Implementation */
 
 #define DESC "Draw a triangle or a rectangle in the terminal"
 const char *usages[] = {

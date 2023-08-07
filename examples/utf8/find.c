@@ -2,8 +2,8 @@
 #include <string.h> /* memcpy */
 #include <stdlib.h> /* malloc, free */
 
-#include <utf8.h>
-#include <utf8.c>
+#include "../../utf8.h"
+#include "../../utf8.c"
 
 void print_res(const char *str, const char *find, const char *res, size_t idx) {
 	printf("Find '%s' in '%s'\n", find, str);
@@ -13,7 +13,7 @@ void print_res(const char *str, const char *find, const char *res, size_t idx) {
 		return;
 	}
 
-	printf("\tFound at %zu\n", idx);
+	printf("\tFound at %i\n", (int)idx);
 
 	size_t size_bytes = u8_str_bytes(find);
 	char  *found      = (char*)malloc(size_bytes + 1);
@@ -31,10 +31,10 @@ int main(int argc, char **argv) {
 
 	const char *a = argv[1], *b = argv[2];
 
-	printf("len(a):   %zu\n", u8_str_len(a));
-	printf("len(b):   %zu\n", u8_str_len(b));
-	printf("bytes(a): %zu\n", u8_str_bytes(a));
-	printf("bytes(b): %zu\n", u8_str_bytes(b));
+	printf("len(a):   %i\n", (int)u8_str_len(a));
+	printf("len(b):   %i\n", (int)u8_str_len(b));
+	printf("bytes(a): %i\n", (int)u8_str_bytes(a));
+	printf("bytes(b): %i\n", (int)u8_str_bytes(b));
 
 	size_t cs_at, ci_at;
 	const char *res_cs = u8_str_find_str   (a, b, &cs_at);

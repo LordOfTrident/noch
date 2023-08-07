@@ -1,8 +1,8 @@
 #include <stdio.h>  /* fprintf, printf, fopen, fclose */
 #include <stdlib.h> /* EXIT_FAILURE */
 
-#include <json.h>
-#include <json.c>
+#include "../../json.h"
+#include "../../json.c"
 
 int main(void) {
 	const char *path = "examples/json/data.json";
@@ -14,7 +14,7 @@ int main(void) {
 		assert(noch_get_err() != NOCH_ERR_OUT_OF_MEM);
 
 		if (noch_get_err() == NOCH_ERR_PARSER)
-			printf("Error: %s:%zu:%zu: %s\n", path, row, col, noch_get_err_msg());
+			printf("Error: %s:%i:%i: %s\n", path, (int)row, (int)col, noch_get_err_msg());
 		else
 			printf("Error: %s: %s\n", path, noch_get_err_msg());
 
