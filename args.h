@@ -14,9 +14,9 @@ extern "C" {
 #include <string.h> /* strcmp, strlen, strncpy */
 #include <ctype.h>  /* tolower */
 
+#include "internal/def.h"
 #include "internal/alloc.h"
 #include "internal/assert.h"
-#include "internal/def.h"
 #include "internal/err.h"
 
 #ifndef MAX_FLAG_NAME_LEN

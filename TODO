@@ -1,6 +1,3 @@
-colorer.h    Terminal output colors
-log.h        Logging
-common.h     Common functionality
 darray.h     Dynamic array
 hash.h       Hash map
 fs.h         Filesystem

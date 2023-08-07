@@ -6,7 +6,7 @@ extern "C" {
 
 #include "err.h"
 
-const char *noch_err_to_str_map[NOCH_ERRS_COUNT] = {
+static const char *noch_err_to_str_map[NOCH_ERRS_COUNT] = {
 	"Ok", /* NOCH_OK */
 
 	"Out of memory",                   /* NOCH_ERR_OUT_OF_MEM */

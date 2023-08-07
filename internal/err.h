@@ -20,6 +20,9 @@ typedef enum {
 	NOCH_ERRS_COUNT,
 } noch_err_t;
 
+extern noch_err_t  noch_err;
+extern const char *noch_err_msg;
+
 NOCH_DEF noch_err_t  noch_get_err(void);
 NOCH_DEF const char *noch_get_err_msg(void);
 NOCH_DEF void        noch_clear_err(void);

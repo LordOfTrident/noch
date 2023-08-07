@@ -1,6 +1,6 @@
 CFLAGS = -O2 -std=c99 -Wall -Wextra -Werror -pedantic -Wno-deprecated-declarations -g -I./
 
-examples: utf8 json args
+examples: utf8 json args colorer log common
 
 bin:
 	mkdir -p bin
@@ -16,8 +16,17 @@ json: bin
 args: bin
 	cc examples/args/line.c $(CFLAGS) -o bin/args_line
 
+colorer: bin
+	cc examples/colorer/colors.c $(CFLAGS) -o bin/colorer
+
+log: bin
+	cc examples/log/log.c $(CFLAGS) -o bin/log
+
+common: bin
+	cc examples/common/common.c $(CFLAGS) -o bin/common
+
 clean: bin
 	rm bin/*
 
 all:
-	@echo examples, utf8, json, args, clean
+	@echo examples, utf8, json, args, colorer, log, common, clean

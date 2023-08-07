@@ -3,7 +3,6 @@ extern "C" {
 #endif
 
 #include "internal/err.c"
-
 #include "args.h"
 
 NOCH_DEF bool arg_is_flag(const char *arg) {

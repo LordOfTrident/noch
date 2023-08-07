@@ -1,0 +1,17 @@
+#include <stdio.h>
+
+#include <common.h>
+#include <common.c>
+
+int main(int argc, char **argv) {
+	UNUSED(argc); UNUSED(argv);
+
+	char str_buf[] = "Hello, world!";
+	printf("String: '%s'\n", str_buf);
+	printf("Buffer length: '%zu'\n", ARRAY_LEN(str_buf));
+
+	char *dup = xstrdup(str_buf);
+	printf("Copied to heap: '%s'\n", dup);
+
+	TODO("ZERO_STRUCT example");
+}
