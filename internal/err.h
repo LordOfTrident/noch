@@ -7,7 +7,6 @@ extern "C" {
 #include <stddef.h> /* NULL */
 
 #include "def.h"
-#include "assert.h"
 
 typedef enum {
 	NOCH_OK = 0,

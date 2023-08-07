@@ -15,8 +15,6 @@ extern "C" {
 #include <string.h> /* memset, strlen, strcpy */
 #include <ctype.h>  /* isspace, isalnum, isalpha, isdigit, isxdigit */
 
-#include "internal/alloc.h"
-#include "internal/assert.h"
 #include "internal/def.h"
 #include "internal/err.h"
 

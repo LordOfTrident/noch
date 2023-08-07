@@ -2,7 +2,10 @@
 extern "C" {
 #endif
 
+#include "internal/alloc.h"
+#include "internal/assert.h"
 #include "internal/err.c"
+
 #include "json.h"
 
 const char *json_type_to_str_map[JSON_TYPES_COUNT] = {

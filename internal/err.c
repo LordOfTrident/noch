@@ -5,6 +5,7 @@ extern "C" {
 #endif
 
 #include "err.h"
+#include "assert.h"
 
 static const char *noch_err_to_str_map[NOCH_ERRS_COUNT] = {
 	"Ok", /* NOCH_OK */

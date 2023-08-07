@@ -9,8 +9,6 @@ extern "C" {
 #include <string.h> /* memset, strlen, strcpy */
 
 #include "internal/def.h"
-#include "internal/alloc.h"
-#include "internal/assert.h"
 #include "internal/err.h"
 
 #define UNUSED(X)      (void)X

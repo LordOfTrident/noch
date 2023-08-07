@@ -2,7 +2,10 @@
 extern "C" {
 #endif
 
+#include "internal/alloc.h"
+#include "internal/assert.h"
 #include "internal/err.c"
+
 #include "args.h"
 
 NOCH_DEF bool arg_is_flag(const char *arg) {

@@ -12,7 +12,6 @@ extern "C" {
 #include <stdint.h> /* uint32_t, uint8_t */
 #include <string.h> /* strlen */
 
-#include "internal/assert.h"
 #include "internal/def.h"
 
 /* TODO: Add a way to detect if a utf8 character takes up 2 terminal screen characters. This means

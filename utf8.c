@@ -2,6 +2,8 @@
 extern "C" {
 #endif
 
+#include "internal/assert.h"
+
 #include "utf8.h"
 
 static uint8_t i__u8_rune_size_map[256] = {

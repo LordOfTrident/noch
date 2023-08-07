@@ -2,6 +2,8 @@
 extern "C" {
 #endif
 
+#include "internal/alloc.h"
+#include "internal/assert.h"
 #include "internal/err.c"
 
 #include "common.h"
