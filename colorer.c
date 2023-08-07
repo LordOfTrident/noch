@@ -6,7 +6,7 @@ extern "C" {
 
 #ifdef PLATFORM_WINDOWS
 
-static WORD s__color_to_win_attr_fg[] = {
+static WORD i__color_to_win_attr_fg[] = {
 	/* COLOR_BLACK   */ 0,
 	/* COLOR_RED     */ FOREGROUND_RED,
 	/* COLOR_GREEN   */ FOREGROUND_GREEN,
@@ -27,7 +27,7 @@ static WORD s__color_to_win_attr_fg[] = {
 	                           FOREGROUND_INTENSITY,
 };
 
-static WORD s__color_to_win_attr_bg[] = {
+static WORD i__color_to_win_attr_bg[] = {
 	/* COLOR_BLACK   */ 0,
 	/* COLOR_RED     */ BACKGROUND_RED,
 	/* COLOR_GREEN   */ BACKGROUND_GREEN,
@@ -48,26 +48,26 @@ static WORD s__color_to_win_attr_bg[] = {
 	                           BACKGROUND_INTENSITY,
 };
 
-static WORD s__current_fg_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-static WORD s__current_bg_color = 0;
+static WORD i__current_fg_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+static WORD i__current_bg_color = 0;
 
-static HANDLE s__win_stdout_handle;
-static HANDLE s__win_stderr_handle;
+static HANDLE i__win_stdout_handle;
+static HANDLE i__win_stderr_handle;
 
-static CONSOLE_SCREEN_BUFFER_INFO s__orig_csbi;
+static CONSOLE_SCREEN_BUFFER_INFO i__orig_csbi;
 
-static HANDLE s__file_to_win_handle(FILE *file) {
+static HANDLE i__file_to_win_handle(FILE *file) {
 	if (file == stdout)
-		return s__win_stdout_handle;
+		return i__win_stdout_handle;
 	else if (file == stderr)
-		return s__win_stderr_handle;
+		return i__win_stderr_handle;
 	else
 		return INVALID_HANDLE_VALUE;
 }
 
 #else
 
-static const char *s__color_to_esc_seq_fg[] = {
+static const char *i__color_to_esc_seq_fg[] = {
 	/* COLOR_BLACK   */ "\x1b[30m",
 	/* COLOR_RED     */ "\x1b[31m",
 	/* COLOR_GREEN   */ "\x1b[32m",
@@ -87,7 +87,7 @@ static const char *s__color_to_esc_seq_fg[] = {
 	/* COLOR_BRIGHT_WHITE   */ "\x1b[97m",
 };
 
-static const char *s__color_to_esc_seq_bg[] = {
+static const char *i__color_to_esc_seq_bg[] = {
 	/* COLOR_BLACK   */ "\x1b[40m",
 	/* COLOR_RED     */ "\x1b[41m",
 	/* COLOR_GREEN   */ "\x1b[42m",
@@ -109,62 +109,62 @@ static const char *s__color_to_esc_seq_bg[] = {
 
 #endif
 
-static bool s__file_can_be_colored(FILE *file) {
+static bool i__file_can_be_colored(FILE *file) {
 	return file == stdout || file == stderr;
 }
 
 NOCH_DEF void init_color(void) {
 #ifdef PLATFORM_WINDOWS
-	s__win_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	s__win_stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+	i__win_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	i__win_stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
 
-	GetConsoleScreenBufferInfo(s__win_stdout_handle, &s__orig_csbi);
+	GetConsoleScreenBufferInfo(i__win_stdout_handle, &i__orig_csbi);
 #endif
 }
 
 NOCH_DEF void freset_color(FILE *file) {
-	if (!s__file_can_be_colored(file))
+	if (!i__file_can_be_colored(file))
 		return;
 
 #ifdef PLATFORM_WINDOWS
-	SetConsoleTextAttribute(s__file_to_win_handle(file), s__orig_csbi.wAttributes);
+	SetConsoleTextAttribute(i__file_to_win_handle(file), i__orig_csbi.wAttributes);
 #else
 	fputs("\x1b[0m", file);
 #endif
 }
 
 NOCH_DEF void fhighlight_fg(FILE *file) {
-	if (!s__file_can_be_colored(file))
+	if (!i__file_can_be_colored(file))
 		return;
 
 #ifdef PLATFORM_WINDOWS
-	s__current_fg_color |= FOREGROUND_INTENSITY;
+	i__current_fg_color |= FOREGROUND_INTENSITY;
 #else
 	fputs("\x1b[1m", file);
 #endif
 }
 
 NOCH_DEF void fset_fg_color(FILE *file, int color) {
-	if (!s__file_can_be_colored(file))
+	if (!i__file_can_be_colored(file))
 		return;
 
 #ifdef WIN32
-	s__current_fg_color = s__color_to_win_attr_fg[color];
-	SetConsoleTextAttribute(s__file_to_win_handle(file), s__current_fg_color | s__current_bg_color);
+	i__current_fg_color = i__color_to_win_attr_fg[color];
+	SetConsoleTextAttribute(i__file_to_win_handle(file), i__current_fg_color | i__current_bg_color);
 #else
-	fputs(s__color_to_esc_seq_fg[color], file);
+	fputs(i__color_to_esc_seq_fg[color], file);
 #endif
 }
 
 NOCH_DEF void fset_bg_color(FILE *file, int color) {
-	if (!s__file_can_be_colored(file))
+	if (!i__file_can_be_colored(file))
 		return;
 
 #ifdef WIN32
-	s__current_bg_color = s__color_to_win_attr_bg[color];
-	SetConsoleTextAttribute(s__file_to_win_handle(file), s__current_fg_color | s__current_bg_color);
+	i__current_bg_color = i__color_to_win_attr_bg[color];
+	SetConsoleTextAttribute(i__file_to_win_handle(file), i__current_fg_color | i__current_bg_color);
 #else
-	fputs(s__color_to_esc_seq_bg[color], file);
+	fputs(i__color_to_esc_seq_bg[color], file);
 #endif
 }
 

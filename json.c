@@ -22,9 +22,9 @@ const char *json_type_to_str(json_type_t type) {
 	return json_type_to_str_map[type];
 }
 
-static json_t json_null_instance;
+static json_t i__json_null_instance;
 
-static json_t *json_new(json_type_t type) {
+static json_t *i__json_new(json_type_t type) {
 	json_t *json = (json_t*)NOCH_ALLOC(sizeof(json_t));
 	if (json == NULL) {
 		NOCH_OUT_OF_MEM();
@@ -37,10 +37,10 @@ static json_t *json_new(json_type_t type) {
 }
 
 NOCH_DEF json_t *json_null(void) {
-	return &json_null_instance;
+	return &i__json_null_instance;
 }
 
-static char *json_strdup(const char *str) {
+static char *i__json_strdup(const char *str) {
 	char *duped = (char*)NOCH_ALLOC(strlen(str) + 1);
 	if (duped == NULL) {
 		NOCH_OUT_OF_MEM();
@@ -54,12 +54,12 @@ static char *json_strdup(const char *str) {
 NOCH_DEF json_t *json_new_str(const char *str) {
 	NOCH_ASSERT(str != NULL);
 
-	json_t *json = json_new(JSON_STR);
+	json_t *json = i__json_new(JSON_STR);
 	if (json == NULL)
 		return NULL;
 
 	json->as.str.len = strlen(str);
-	json->as.str.buf = json_strdup(str);
+	json->as.str.buf = i__json_strdup(str);
 	if (json->as.str.buf == NULL) {
 		NOCH_FREE(json);
 		return NULL;
@@ -69,7 +69,7 @@ NOCH_DEF json_t *json_new_str(const char *str) {
 }
 
 NOCH_DEF json_t *json_new_float(double float_) {
-	json_t *json = json_new(JSON_FLOAT);
+	json_t *json = i__json_new(JSON_FLOAT);
 	if (json == NULL)
 		return NULL;
 
@@ -78,7 +78,7 @@ NOCH_DEF json_t *json_new_float(double float_) {
 }
 
 NOCH_DEF json_t *json_new_int64(int64_t int64) {
-	json_t *json = json_new(JSON_INT64);
+	json_t *json = i__json_new(JSON_INT64);
 	if (json == NULL)
 		return NULL;
 
@@ -87,7 +87,7 @@ NOCH_DEF json_t *json_new_int64(int64_t int64) {
 }
 
 NOCH_DEF json_t *json_new_bool(bool bool_) {
-	json_t *json = json_new(JSON_BOOL);
+	json_t *json = i__json_new(JSON_BOOL);
 	if (json == NULL)
 		return NULL;
 
@@ -96,7 +96,7 @@ NOCH_DEF json_t *json_new_bool(bool bool_) {
 }
 
 NOCH_DEF json_t *json_new_list(void) {
-	json_t *json = json_new(JSON_LIST);
+	json_t *json = i__json_new(JSON_LIST);
 	if (json == NULL)
 		return NULL;
 
@@ -112,7 +112,7 @@ NOCH_DEF json_t *json_new_list(void) {
 }
 
 NOCH_DEF json_t *json_new_obj(void) {
-	json_t *json = json_new(JSON_OBJ);
+	json_t *json = i__json_new(JSON_OBJ);
 	if (json == NULL)
 		return NULL;
 
@@ -247,9 +247,9 @@ typedef struct {
 	FILE  *file;
 	char  *buf;
 	size_t size, cap;
-} jsons_t;
+} i__jsons_t;
 
-static int jsons_print(jsons_t *s, const char *str) {
+static int i__jsons_print(i__jsons_t *s, const char *str) {
 	if (s->file != NULL)
 		fputs(str, s->file);
 	else {
@@ -273,7 +273,7 @@ static int jsons_print(jsons_t *s, const char *str) {
 	return 0;
 }
 
-static int jsons_printf(jsons_t *s, const char *fmt, ...) {
+static int i__jsons_printf(i__jsons_t *s, const char *fmt, ...) {
 	char    str[1024];
 	va_list args;
 
@@ -281,7 +281,7 @@ static int jsons_printf(jsons_t *s, const char *fmt, ...) {
 	vsnprintf(str, sizeof(str), fmt, args);
 	va_end(args);
 
-	return jsons_print(s, str);
+	return i__jsons_print(s, str);
 }
 
 #define JSONS_MUST(X)  \
@@ -290,10 +290,10 @@ static int jsons_printf(jsons_t *s, const char *fmt, ...) {
 			return -1; \
 	} while (0)
 
-#define JSONS_PRINT(S, STR)  JSONS_MUST(jsons_print(S, STR))
-#define JSONS_PRINTF(S, ...) JSONS_MUST(jsons_printf(S, __VA_ARGS__))
+#define JSONS_PRINT(S, STR)  JSONS_MUST(i__jsons_print(S, STR))
+#define JSONS_PRINTF(S, ...) JSONS_MUST(i__jsons_printf(S, __VA_ARGS__))
 
-static int jsons_print_str(jsons_t *s, json_str_t *str) {
+static int i__jsons_print_str(i__jsons_t *s, json_str_t *str) {
 	JSONS_PRINT(s, "\"");
 
 	for (size_t i = 0; i < str->len; ++ i) {
@@ -318,7 +318,7 @@ static int jsons_print_str(jsons_t *s, json_str_t *str) {
 	return 0;
 }
 
-static int jsons_print_float(jsons_t *s, float num) {
+static int i__jsons_print_float(i__jsons_t *s, float num) {
 	char buf[256];
 	snprintf(buf, sizeof(buf), "%f", num);
 
@@ -352,7 +352,7 @@ static int jsons_print_float(jsons_t *s, float num) {
 	return 0;
 }
 
-static int jsons_indent(jsons_t *s, size_t nest) {
+static int i__jsons_indent(i__jsons_t *s, size_t nest) {
 	if (s->file != NULL) {
 		for (size_t i = 0; i < nest; ++ i)
 			fputc('\t', s->file);
@@ -378,16 +378,16 @@ static int jsons_indent(jsons_t *s, size_t nest) {
 	return 0;
 }
 
-#define JSONS_INDENT(S, NEST) JSONS_MUST(jsons_indent(S, NEST))
+#define JSONS_INDENT(S, NEST) JSONS_MUST(i__jsons_indent(S, NEST))
 
-static int jsons_print_json(jsons_t *s, json_t *json, size_t nest, bool comma) {
+static int i__jsons_print_json(i__jsons_t *s, json_t *json, size_t nest, bool comma) {
 	NOCH_ASSERT(json != NULL);
 
 	switch (json->type) {
 	case JSON_NULL: JSONS_PRINT(s, "null"); break;
 
-	case JSON_STR:   JSONS_MUST(jsons_print_str  (s, &json->as.str));   break;
-	case JSON_FLOAT: JSONS_MUST(jsons_print_float(s, json->as.float_)); break;
+	case JSON_STR:   JSONS_MUST(i__jsons_print_str  (s, &json->as.str));      break;
+	case JSON_FLOAT: JSONS_MUST(i__jsons_print_float(s, json->as.float_));    break;
 	case JSON_INT64: JSONS_PRINTF(s, "%lli", (long long)json->as.int64);      break;
 	case JSON_BOOL:  JSONS_PRINTF(s, "%s", json->as.bool_? "true" : "false"); break;
 
@@ -400,7 +400,8 @@ static int jsons_print_json(jsons_t *s, json_t *json, size_t nest, bool comma) {
 
 		for (size_t i = 0; i < json->as.list.size; ++ i) {
 			JSONS_INDENT(s, nest);
-			JSONS_MUST(jsons_print_json(s, json->as.list.buf[i], nest, i + 1 < json->as.list.size));
+			JSONS_MUST(i__jsons_print_json(s, json->as.list.buf[i], nest,
+			                               i + 1 < json->as.list.size));
 		}
 		JSONS_INDENT(s, -- nest);
 		JSONS_PRINT(s, "]");
@@ -416,7 +417,8 @@ static int jsons_print_json(jsons_t *s, json_t *json, size_t nest, bool comma) {
 		for (size_t i = 0; i < json->as.obj.size; ++ i) {
 			JSONS_INDENT(s, nest);
 			JSONS_PRINTF(s, "\"%s\": ", json->as.obj.keys[i]);
-			JSONS_MUST(jsons_print_json(s, json->as.obj.vals[i], nest, i + 1 < json->as.obj.size));
+			JSONS_MUST(i__jsons_print_json(s, json->as.obj.vals[i], nest,
+			                               i + 1 < json->as.obj.size));
 		}
 		JSONS_INDENT(s, -- nest);
 		JSONS_PRINT(s, "}");
@@ -440,20 +442,20 @@ static int jsons_print_json(jsons_t *s, json_t *json, size_t nest, bool comma) {
 NOCH_DEF void json_fprint(json_t *json, FILE *file) {
 	NOCH_ASSERT(file != NULL);
 
-	jsons_t s = {0};
-	s.file    = file;
+	i__jsons_t s = {0};
+	s.file       = file;
 
-	jsons_print_json(&s, json, 0, false);
+	i__jsons_print_json(&s, json, 0, false);
 }
 
 NOCH_DEF char *json_stringify(json_t *json) {
-	jsons_t s = {0};
-	s.cap     = JSON_STRINGIFY_CHUNK_SIZE;
-	s.buf     = (char*)NOCH_ALLOC(s.cap);
+	i__jsons_t s = {0};
+	s.cap        = JSON_STRINGIFY_CHUNK_SIZE;
+	s.buf        = (char*)NOCH_ALLOC(s.cap);
 	if (s.buf == NULL)
 		return NULL;
 
-	return jsons_print_json(&s, json, 0, false) == 0? s.buf : NULL;
+	return i__jsons_print_json(&s, json, 0, false) == 0? s.buf : NULL;
 }
 
 typedef enum {
@@ -473,21 +475,21 @@ typedef enum {
 
 	JSON_TOK_LSQUARE,
 	JSON_TOK_RSQUARE,
-} json_tok_t;
+} i__json_tok_t;
 
 /* JSON parser structure */
 typedef struct {
 	const char *it, *bol; /* iterator, beginning of line */
 	size_t      row;
 
-	json_tok_t tok;
-	size_t     tok_row, tok_col;
+	i__json_tok_t tok;
+	size_t        tok_row, tok_col;
 
 	char  *data;
 	size_t data_cap, data_size;
 
 	size_t err_col, err_row;
-} jsonp_t;
+} i__jsonp_t;
 
 #define JSONP_ERR(P, MSG, ROW, COL) \
 	((P)->err_row = ROW,            \
@@ -496,12 +498,12 @@ typedef struct {
 
 #define JSONP_COL(P) ((size_t)(P)->it - (size_t)(P)->bol + 1)
 
-static void jsonp_data_clear(jsonp_t *p) {
+static void i__jsonp_data_clear(i__jsonp_t *p) {
 	p->data[0]   = '\0';
 	p->data_size = 0;
 }
 
-static int jsonp_data_add(jsonp_t *p, char ch) {
+static int i__jsonp_data_add(i__jsonp_t *p, char ch) {
 	if (p->data_size + 1 >= p->data_cap) {
 		p->data_cap *= 2;
 		void *tmp = NOCH_REALLOC(p->data, p->data_cap);
@@ -517,7 +519,7 @@ static int jsonp_data_add(jsonp_t *p, char ch) {
 }
 
 /* Not standard!!!! but very useful */
-static int jsonp_skip_cmnt(jsonp_t *p) {
+static int i__jsonp_skip_cmnt(i__jsonp_t *p) {
 	NOCH_ASSERT(*p->it == '/' && p->it[1] == '*');
 
 	size_t row = p->row, col = JSONP_COL(p);
@@ -539,10 +541,10 @@ static int jsonp_skip_cmnt(jsonp_t *p) {
 	return 0;
 }
 
-static int jsonp_skip_ws_and_cmnts(jsonp_t *p) {
+static int i__jsonp_skip_ws_and_cmnts(i__jsonp_t *p) {
 	while (*p->it != '\0') {
 		if (*p->it == '/' && p->it[1] == '*') {
-			if (jsonp_skip_cmnt(p) != 0)
+			if (i__jsonp_skip_cmnt(p) != 0)
 				return -1;
 		} else if (!isspace(*p->it))
 			break;
@@ -558,21 +560,21 @@ static int jsonp_skip_ws_and_cmnts(jsonp_t *p) {
 	return 0;
 }
 
-static void jsonp_tok_start_here(jsonp_t *p) {
+static void i__jsonp_tok_start_here(i__jsonp_t *p) {
 	p->tok_row = p->row;
 	p->tok_col = JSONP_COL(p);
 }
 
-static int jsonp_tok_single(jsonp_t *p, json_tok_t tok) {
-	jsonp_data_clear(p);
-	jsonp_tok_start_here(p);
+static int i__jsonp_tok_single(i__jsonp_t *p, i__json_tok_t tok) {
+	i__jsonp_data_clear(p);
+	i__jsonp_tok_start_here(p);
 	p->tok = tok;
 
 	++ p->it;
 	return 0;
 }
 
-static int jsonp_get_hex4(jsonp_t *p, uint16_t *ret) {
+static int i__jsonp_get_hex4(i__jsonp_t *p, uint16_t *ret) {
 	NOCH_ASSERT(ret != NULL);
 
 	char buf[5] = {0};
@@ -587,13 +589,13 @@ static int jsonp_get_hex4(jsonp_t *p, uint16_t *ret) {
 	return 0;
 }
 
-static int jsonp_useq(jsonp_t *p) {
+static int i__jsonp_useq(i__jsonp_t *p) {
 	size_t col = JSONP_COL(p) - 1;
 	++ p->it;
 
 	uint32_t rune;
 	uint16_t first, second;
-	if (jsonp_get_hex4(p, &first) != 0)
+	if (i__jsonp_get_hex4(p, &first) != 0)
 		return -1;
 
 	/* Surrogate pair */
@@ -605,7 +607,7 @@ static int jsonp_useq(jsonp_t *p) {
 			return JSONP_ERR(p, "Invalid unicode sequence", p->row, col);
 
 		p->it += 2;
-		if (jsonp_get_hex4(p, &second) != 0)
+		if (i__jsonp_get_hex4(p, &second) != 0)
 			return -1;
 
 		if (second < 0xDC00 || second > 0xDFFF)
@@ -635,18 +637,18 @@ static int jsonp_useq(jsonp_t *p) {
 		return JSONP_ERR(p, "Invalid unicode sequence", p->row, col);
 
 	for (const char *it = out; *it != '\0'; ++ it) {
-		if (jsonp_data_add(p, *it) != 0)
+		if (i__jsonp_data_add(p, *it) != 0)
 			return -1;
 	}
 
     return 0;
 }
 
-static int jsonp_tok_str(jsonp_t *p) {
+static int i__jsonp_tok_str(i__jsonp_t *p) {
 	NOCH_ASSERT(*p->it == '"');
 
-	jsonp_data_clear(p);
-	jsonp_tok_start_here(p);
+	i__jsonp_data_clear(p);
+	i__jsonp_tok_start_here(p);
 	p->tok = JSON_TOK_STR;
 
 	++ p->it;
@@ -669,19 +671,19 @@ static int jsonp_tok_str(jsonp_t *p) {
 			case 'e': escaped = '\x1b'; break; /* Not standard!!!! but useful */
 
 			case 'u':
-				if (jsonp_useq(p) != 0)
+				if (i__jsonp_useq(p) != 0)
 					return -1;
 				continue;
 
 			default: return JSONP_ERR(p, "Unknown escape sequence", p->row, JSONP_COL(p) - 1);
 			}
 
-			if (jsonp_data_add(p, escaped) != 0)
+			if (i__jsonp_data_add(p, escaped) != 0)
 				return -1;
 		} else if (*p->it == '\\') {
 			escape = true;
 		} else {
-			if (jsonp_data_add(p, *p->it) != 0)
+			if (i__jsonp_data_add(p, *p->it) != 0)
 				return -1;
 		}
 
@@ -692,16 +694,16 @@ static int jsonp_tok_str(jsonp_t *p) {
 	return 0;
 }
 
-static int jsonp_tok_num(jsonp_t *p) {
+static int i__jsonp_tok_num(i__jsonp_t *p) {
 	NOCH_ASSERT(isdigit(*p->it) || *p->it == '-');
 
-	jsonp_data_clear(p);
-	jsonp_tok_start_here(p);
+	i__jsonp_data_clear(p);
+	i__jsonp_tok_start_here(p);
 
 	bool exponent = false, fpoint = false;
 
 	if (*p->it == '-') {
-		if (jsonp_data_add(p, *p->it ++) != 0)
+		if (i__jsonp_data_add(p, *p->it ++) != 0)
 			return -1;
 
 		if (!isdigit(*p->it))
@@ -737,7 +739,7 @@ static int jsonp_tok_num(jsonp_t *p) {
 		else if (!isdigit(*p->it))
 			break;
 
-		if (jsonp_data_add(p, *p->it ++) != 0)
+		if (i__jsonp_data_add(p, *p->it ++) != 0)
 			return -1;
 	}
 
@@ -745,14 +747,14 @@ static int jsonp_tok_num(jsonp_t *p) {
 	return 0;
 }
 
-static int jsonp_tok_id(jsonp_t *p) {
+static int i__jsonp_tok_id(i__jsonp_t *p) {
 	NOCH_ASSERT(isalpha(*p->it));
 
-	jsonp_data_clear(p);
-	jsonp_tok_start_here(p);
+	i__jsonp_data_clear(p);
+	i__jsonp_tok_start_here(p);
 
 	while (isalnum(*p->it)) {
-		if (jsonp_data_add(p, *p->it) != 0)
+		if (i__jsonp_data_add(p, *p->it) != 0)
 			return -1;
 
 		++ p->it;
@@ -768,8 +770,8 @@ static int jsonp_tok_id(jsonp_t *p) {
 	return 0;
 }
 
-static int jsonp_advance(jsonp_t *p) {
-	if (jsonp_skip_ws_and_cmnts(p) != 0)
+static int i__jsonp_advance(i__jsonp_t *p) {
+	if (i__jsonp_skip_ws_and_cmnts(p) != 0)
 		return -1;
 	else if (*p->it == '\0') {
 		p->tok     = JSON_TOK_EOI;
@@ -779,20 +781,20 @@ static int jsonp_advance(jsonp_t *p) {
 	}
 
 	switch (*p->it) {
-	case '"': return jsonp_tok_str(p);
+	case '"': return i__jsonp_tok_str(p);
 
-	case '{': return jsonp_tok_single(p, JSON_TOK_LCURLY);
-	case '}': return jsonp_tok_single(p, JSON_TOK_RCURLY);
-	case '[': return jsonp_tok_single(p, JSON_TOK_LSQUARE);
-	case ']': return jsonp_tok_single(p, JSON_TOK_RSQUARE);
-	case ',': return jsonp_tok_single(p, JSON_TOK_COMMA);
-	case ':': return jsonp_tok_single(p, JSON_TOK_COLON);
+	case '{': return i__jsonp_tok_single(p, JSON_TOK_LCURLY);
+	case '}': return i__jsonp_tok_single(p, JSON_TOK_RCURLY);
+	case '[': return i__jsonp_tok_single(p, JSON_TOK_LSQUARE);
+	case ']': return i__jsonp_tok_single(p, JSON_TOK_RSQUARE);
+	case ',': return i__jsonp_tok_single(p, JSON_TOK_COMMA);
+	case ':': return i__jsonp_tok_single(p, JSON_TOK_COLON);
 
 	default:
 		if (isdigit(*p->it) || *p->it == '-')
-			return jsonp_tok_num(p);
+			return i__jsonp_tok_num(p);
 		else if (isalpha(*p->it))
-			return jsonp_tok_id(p);
+			return i__jsonp_tok_id(p);
 		else
 			return JSONP_ERR(p, "Unexpected character", p->row, JSONP_COL(p));
 	}
@@ -802,7 +804,7 @@ static int jsonp_advance(jsonp_t *p) {
 
 #define JSONP_MUST_ADVANCE(P)      \
 	do {                           \
-		if (jsonp_advance(P) != 0) \
+		if (i__jsonp_advance(P) != 0) \
 			goto fail;             \
 	} while (0)
 
@@ -814,15 +816,15 @@ static int jsonp_advance(jsonp_t *p) {
 		}                                                  \
 	} while (0)
 
-static json_t *jsonp_parse(jsonp_t *p);
+static json_t *i__jsonp_parse(i__jsonp_t *p);
 
-static json_t *jsonp_parse_obj(jsonp_t *p) {
+static json_t *i__jsonp_parse_obj(i__jsonp_t *p) {
 	json_t *obj = json_new_obj();
 	JSONP_MUST_ADVANCE(p);
 
 	while (p->tok != JSON_TOK_RCURLY) {
 		JSONP_TOK_MUST_BE(p, JSON_TOK_STR, "Expected a key string");
-		char *key = json_strdup(p->data);
+		char *key = i__json_strdup(p->data);
 		if (key == NULL)
 			goto fail;
 
@@ -830,7 +832,7 @@ static json_t *jsonp_parse_obj(jsonp_t *p) {
 		JSONP_TOK_MUST_BE(p, JSON_TOK_COLON, "Expected a \":\"");
 
 		JSONP_MUST_ADVANCE(p);
-		json_t *json = jsonp_parse(p);
+		json_t *json = i__jsonp_parse(p);
 		if (json == NULL)
 			goto fail;
 
@@ -855,12 +857,12 @@ fail:
 	return NULL;
 }
 
-static json_t *jsonp_parse_list(jsonp_t *p) {
+static json_t *i__jsonp_parse_list(i__jsonp_t *p) {
 	json_t *list = json_new_list();
 	JSONP_MUST_ADVANCE(p);
 
 	while (p->tok != JSON_TOK_RSQUARE) {
-		json_t *json = jsonp_parse(p);
+		json_t *json = i__jsonp_parse(p);
 		if (json == NULL)
 			goto fail;
 
@@ -886,7 +888,7 @@ fail:
 #undef JSONP_TOK_MUST_BE
 #undef JSONP_MUST_ADVANCE
 
-static json_t *jsonp_parse(jsonp_t *p) {
+static json_t *i__jsonp_parse(i__jsonp_t *p) {
 	switch (p->tok) {
 	case JSON_TOK_EOI: JSONP_ERR(p, "Unexpected end of file", p->tok_row, p->tok_col); break;
 
@@ -896,8 +898,8 @@ static json_t *jsonp_parse(jsonp_t *p) {
 	case JSON_TOK_BOOL:  return json_new_bool(p->data[0] == 't');
 	case JSON_TOK_NULL:  return json_null();
 
-	case JSON_TOK_LCURLY:  return jsonp_parse_obj(p);
-	case JSON_TOK_LSQUARE: return jsonp_parse_list(p);
+	case JSON_TOK_LCURLY:  return i__jsonp_parse_obj(p);
+	case JSON_TOK_LSQUARE: return i__jsonp_parse_list(p);
 
 	default: JSONP_ERR(p, "Unexpected token", p->tok_row, p->tok_col); break;
 	}
@@ -958,7 +960,7 @@ NOCH_DEF json_t *json_from_mem(const char *in, size_t *row, size_t *col) {
 
 #define JSONP_TOK_CAP 64
 
-	jsonp_t p = {0};
+	i__jsonp_t p = {0};
 	p.it      = in;
 	p.bol     = p.it;
 	p.row     = 1;
@@ -972,15 +974,15 @@ NOCH_DEF json_t *json_from_mem(const char *in, size_t *row, size_t *col) {
 
 #undef JSONP_TOK_CAP
 
-	if (jsonp_advance(&p) != 0) {
+	if (i__jsonp_advance(&p) != 0) {
 		NOCH_FREE(p.data);
 		JSON_SET_WHERE(row, p.err_row, col, p.err_col);
 		return NULL;
 	}
 
-	json_t *json = jsonp_parse(&p);
+	json_t *json = i__jsonp_parse(&p);
 	if (json != NULL) {
-		if (jsonp_advance(&p) != 0) {
+		if (i__jsonp_advance(&p) != 0) {
 			json_destroy(json);
 			NOCH_FREE(p.data);
 			JSON_SET_WHERE(row, p.err_row, col, p.err_col);

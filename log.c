@@ -4,13 +4,13 @@ extern "C" {
 
 #include "log.h"
 
-static FILE *s__log_file    = NULL;
-static int   s__log_flags   = LOG_BASIC;
-static bool  s__log_is_init = false;
+static FILE *i__log_file    = NULL;
+static int   i__log_flags   = LOG_BASIC;
+static bool  i__log_is_init = false;
 
 #ifdef PLATFORM_WINDOWS
 
-static WORD s__log_color_to_win_attr[] = {
+static WORD i__log_color_to_win_attr[] = {
 	0,
 	/* LOG_RED     */ FOREGROUND_RED | FOREGROUND_INTENSITY,
 	/* LOG_GREEN   */ FOREGROUND_GREEN | FOREGROUND_INTENSITY,
@@ -21,23 +21,23 @@ static WORD s__log_color_to_win_attr[] = {
 	/* LOG_WHITE   */ FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
 };
 
-static HANDLE s__log_win_stdout_handle;
-static HANDLE s__log_win_stderr_handle;
+static HANDLE i__log_win_stdout_handle;
+static HANDLE i__log_win_stderr_handle;
 
-static CONSOLE_SCREEN_BUFFER_INFO s__log_orig_csbi;
+static CONSOLE_SCREEN_BUFFER_INFO i__log_orig_csbi;
 
-static HANDLE s__log_file_to_win_handle(void) {
-	if (s__log_file == stdout)
-		return s__log_win_stdout_handle;
-	else if (s__log_file == stderr)
-		return s__log_win_stderr_handle;
+static HANDLE i__log_file_to_win_handle(void) {
+	if (i__log_file == stdout)
+		return i__log_win_stdout_handle;
+	else if (i__log_file == stderr)
+		return i__log_win_stderr_handle;
 	else
 		return INVALID_HANDLE_VALUE;
 }
 
 #else
 
-static const char *s__log_color_to_esc_seq[] = {
+static const char *i__log_color_to_esc_seq[] = {
 	0,
 	/* LOG_RED     */ "\x1b[1;31m",
 	/* LOG_GREEN   */ "\x1b[1;32m",
@@ -50,58 +50,58 @@ static const char *s__log_color_to_esc_seq[] = {
 
 #endif
 
-static bool s__log_file_can_be_colored(void) {
-	return s__log_file == stdout || s__log_file == stderr;
+static bool i__log_file_can_be_colored(void) {
+	return i__log_file == stdout || i__log_file == stderr;
 }
 
-static void s__init_log(void) {
-	s__log_is_init = true;
+static void i__init_log(void) {
+	i__log_is_init = true;
 
 #ifdef PLATFORM_WINDOWS
-	s__log_win_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	s__log_win_stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+	i__log_win_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	i__log_win_stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
 
-	GetConsoleScreenBufferInfo(s__log_win_stdout_handle, &s__log_orig_csbi);
+	GetConsoleScreenBufferInfo(i__log_win_stdout_handle, &i__log_orig_csbi);
 #endif
 
-	if (s__log_file == NULL)
-		s__log_file = stderr;
+	if (i__log_file == NULL)
+		i__log_file = stderr;
 }
 
 NOCH_DEF void set_log_file(FILE *file) {
-	s__log_file = file;
+	i__log_file = file;
 }
 
 NOCH_DEF void set_log_flags(int flags) {
-	s__log_flags = flags;
+	i__log_flags = flags;
 }
 
-static void s__log_reset_color(void) {
-	if (s__log_file_can_be_colored())
+static void i__log_reset_color(void) {
+	if (i__log_file_can_be_colored())
 #ifdef PLATFORM_WINDOWS
-		SetConsoleTextAttribute(s__log_file_to_win_handle(), s__orig_csbi.wAttributes);
+		SetConsoleTextAttribute(i__log_file_to_win_handle(), i__orig_csbi.wAttributes);
 #else
-		fputs("\x1b[0m", s__log_file);
+		fputs("\x1b[0m", i__log_file);
 #endif
 }
 
 NOCH_DEF void log_generic(int color, const char *title, const char *path,
                           size_t line, const char *fmt, ...) {
-	if (!s__log_is_init)
-		s__init_log();
+	if (!i__log_is_init)
+		i__init_log();
 
-	s__log_reset_color();
+	i__log_reset_color();
 
 #ifdef PLATFORM_WINDOWS
-	HANDLE handle = s__log_file_to_win_handle();
+	HANDLE handle = i__log_file_to_win_handle();
 #endif
 
-	if (s__log_flags & LOG_TIME_DATE) {
-		if (s__log_file_can_be_colored())
+	if (i__log_flags & LOG_TIME_DATE) {
+		if (i__log_file_can_be_colored())
 #ifdef PLATFORM_WINDOWS
 			SetConsoleTextAttribute(handle, FOREGROUND_INTENSITY);
 #else
-			fputs("\x1b[0;1;90m", s__log_file);
+			fputs("\x1b[0;1;90m", i__log_file);
 #endif
 
 		time_t timer;
@@ -109,40 +109,40 @@ NOCH_DEF void log_generic(int color, const char *title, const char *path,
 		timer = time(NULL);
 		info  = localtime(&timer);
 
-		if (s__log_flags & LOG_DATE) {
+		if (i__log_flags & LOG_DATE) {
 			char buf[16];
 			strftime(buf, 16, "%Y-%m-%d ", info);
-			fputs(buf, s__log_file);
+			fputs(buf, i__log_file);
 		}
 
-		if (s__log_flags & LOG_TIME)
-			fprintf(s__log_file, "%02d:%02d:%02d ", info->tm_hour, info->tm_min, info->tm_sec);
+		if (i__log_flags & LOG_TIME)
+			fprintf(i__log_file, "%02d:%02d:%02d ", info->tm_hour, info->tm_min, info->tm_sec);
 	}
 
-	if (s__log_file_can_be_colored())
+	if (i__log_file_can_be_colored())
 #ifdef PLATFORM_WINDOWS
-		SetConsoleTextAttribute(handle, s__log_color_to_win_attr[color]);
+		SetConsoleTextAttribute(handle, i__log_color_to_win_attr[color]);
 #else
-		fputs(s__log_color_to_esc_seq[color], s__log_file);
+		fputs(i__log_color_to_esc_seq[color], i__log_file);
 #endif
 
-	fprintf(s__log_file, "[%s]", title);
+	fprintf(i__log_file, "[%s]", title);
 
-	if (s__log_flags & LOG_LOCATION) {
-		if (s__log_file_can_be_colored())
+	if (i__log_flags & LOG_LOCATION) {
+		if (i__log_file_can_be_colored())
 #ifdef PLATFORM_WINDOWS
 			SetConsoleTextAttribute(handle, FOREGROUND_RED  | FOREGROUND_GREEN |
 			                                FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 #else
-			fputs("\x1b[0;1;97m", s__log_file);
+			fputs("\x1b[0;1;97m", i__log_file);
 #endif
 
-		fputc(' ', s__log_file);
+		fputc(' ', i__log_file);
 
-		if (s__log_flags & LOG_FILE)
-			fprintf(s__log_file, "%s:", path);
-		else if (s__log_flags & LOG_LINE)
-			fprintf(s__log_file, "%zu:", line);
+		if (i__log_flags & LOG_FILE)
+			fprintf(i__log_file, "%s:", path);
+		else if (i__log_flags & LOG_LINE)
+			fprintf(i__log_file, "%zu:", line);
 	}
 
 	char    str[1024];
@@ -151,8 +151,8 @@ NOCH_DEF void log_generic(int color, const char *title, const char *path,
 	vsnprintf(str, sizeof(str), fmt, args);
 	va_end(args);
 
-	s__log_reset_color();
-	fprintf(s__log_file, " %s\n", str);
+	i__log_reset_color();
+	fprintf(i__log_file, " %s\n", str);
 }
 
 #ifdef __cplusplus

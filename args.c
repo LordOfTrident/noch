@@ -38,10 +38,10 @@ typedef enum {
 	FLAG_BOOL,
 
 	FLAG_TYPE_COUNT,
-} flag_type_t;
+} i__flag_type_t;
 
 typedef struct {
-	flag_type_t type;
+	i__flag_type_t type;
 
 	union {
 		const char **str;
@@ -62,42 +62,42 @@ typedef struct {
 	} default_val;
 
 	const char *short_name, *long_name, *desc;
-} flag_t;
+} i__flag_t;
 
-flag_t flags[FLAGS_CAPACITY];
-size_t flags_count = 0;
+i__flag_t i__flags[FLAGS_CAPACITY];
+size_t    i__flags_count = 0;
 
-static flag_t *flag_get_by_short_name(const char *short_name) {
+static i__flag_t *i__flag_get_by_short_name(const char *short_name) {
 	if (short_name == NULL)
 		return NULL;
 
-	for (size_t i = 0; i < flags_count; ++ i) {
-		if (flags[i].short_name == NULL)
+	for (size_t i = 0; i < i__flags_count; ++ i) {
+		if (i__flags[i].short_name == NULL)
 			continue;
 
-		if (strcmp(flags[i].short_name, short_name) == 0)
-			return &flags[i];
+		if (strcmp(i__flags[i].short_name, short_name) == 0)
+			return &i__flags[i];
 	}
 
 	return NULL;
 }
 
-static flag_t *flag_get_by_long_name(const char *long_name) {
+static i__flag_t *i__flag_get_by_long_name(const char *long_name) {
 	if (long_name == NULL)
 		return NULL;
 
-	for (size_t i = 0; i < flags_count; ++ i) {
-		if (flags[i].long_name == NULL)
+	for (size_t i = 0; i < i__flags_count; ++ i) {
+		if (i__flags[i].long_name == NULL)
 			continue;
 
-		if (strcmp(flags[i].long_name, long_name) == 0)
-			return &flags[i];
+		if (strcmp(i__flags[i].long_name, long_name) == 0)
+			return &i__flags[i];
 	}
 
 	return NULL;
 }
 
-static int arg_to_char(const char *arg, char *var) {
+static int i__arg_to_char(const char *arg, char *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -108,7 +108,7 @@ static int arg_to_char(const char *arg, char *var) {
 	return 0;
 }
 
-static int arg_to_int(const char *arg, int *var) {
+static int i__arg_to_int(const char *arg, int *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -117,7 +117,7 @@ static int arg_to_int(const char *arg, int *var) {
 	return *ptr == '\0'? 0 : -1;
 }
 
-static int arg_to_size(const char *arg, size_t *var) {
+static int i__arg_to_size(const char *arg, size_t *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -126,7 +126,7 @@ static int arg_to_size(const char *arg, size_t *var) {
 	return *ptr == '\0'? 0 : -1;
 }
 
-static int arg_to_num(const char *arg, double *var) {
+static int i__arg_to_num(const char *arg, double *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -136,7 +136,7 @@ static int arg_to_num(const char *arg, double *var) {
 }
 
 /* Case insensitive equality function */
-static bool arg_equals_ci(const char *a, const char *b) {
+static bool i__arg_equals_ci(const char *a, const char *b) {
 	size_t len = strlen(a);
 	if (len != strlen(b))
 		return -1;
@@ -150,12 +150,12 @@ static bool arg_equals_ci(const char *a, const char *b) {
 }
 
 #define ARG_EQUALS_CI_4(STR, A, B, C, D) \
-	(arg_equals_ci(STR, A) ||            \
-	 arg_equals_ci(STR, B) ||            \
-	 arg_equals_ci(STR, C) ||            \
-	 arg_equals_ci(STR, D))
+	(i__arg_equals_ci(STR, A) ||         \
+	 i__arg_equals_ci(STR, B) ||         \
+	 i__arg_equals_ci(STR, C) ||         \
+	 i__arg_equals_ci(STR, D))
 
-static int arg_to_bool(const char *arg, bool *var) {
+static int i__arg_to_bool(const char *arg, bool *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -172,7 +172,7 @@ static int arg_to_bool(const char *arg, bool *var) {
 #undef ARG_EQUALS_CI_4
 
 /* Set the flags value from an arg. Type is automatically assumed from the flag type */
-static int flag_set_from_arg(flag_t *flag, const char *arg) {
+static int i__flag_set_from_arg(i__flag_t *flag, const char *arg) {
 	NOCH_ASSERT(flag != NULL);
 	NOCH_ASSERT(arg  != NULL);
 
@@ -186,11 +186,11 @@ static int flag_set_from_arg(flag_t *flag, const char *arg) {
 
 	switch (flag->type) {
 	case FLAG_STR:  *flag->var.str = arg; break;
-	case FLAG_CHAR: FLAG_SET(ch,    arg_to_char, "Expected a character"); break;
-	case FLAG_INT:  FLAG_SET(int_,  arg_to_int,  "Expected an integer");  break;
-	case FLAG_SIZE: FLAG_SET(size,  arg_to_size, "Expected a size");      break;
-	case FLAG_NUM:  FLAG_SET(num,   arg_to_num,  "Expected a number");    break;
-	case FLAG_BOOL: FLAG_SET(bool_, arg_to_bool, "Expected a boolean");   break;
+	case FLAG_CHAR: FLAG_SET(ch,    i__arg_to_char, "Expected a character"); break;
+	case FLAG_INT:  FLAG_SET(int_,  i__arg_to_int,  "Expected an integer");  break;
+	case FLAG_SIZE: FLAG_SET(size,  i__arg_to_size, "Expected a size");      break;
+	case FLAG_NUM:  FLAG_SET(num,   i__arg_to_num,  "Expected a number");    break;
+	case FLAG_BOOL: FLAG_SET(bool_, i__arg_to_bool, "Expected a boolean");   break;
 
 	default: NOCH_ASSERT(0 && "Unknown flag type");
 	}
@@ -204,13 +204,13 @@ static int flag_set_from_arg(flag_t *flag, const char *arg) {
 	NOCH_DEF void flag_##POSTFIX(const char *short_name, const char *long_name, \
 	                             const char *desc, TYPE *var) {                 \
 		NOCH_ASSERT(var != NULL);                                               \
-		NOCH_ASSERT(flags_count < FLAGS_CAPACITY);                              \
+		NOCH_ASSERT(i__flags_count < FLAGS_CAPACITY);                           \
 		if (short_name != NULL)                                                 \
 			NOCH_ASSERT(strlen(short_name) <= MAX_FLAG_NAME_LEN);               \
 		if (long_name != NULL)                                                  \
 			NOCH_ASSERT(strlen(long_name)  <= MAX_FLAG_NAME_LEN);               \
 		                                                                        \
-		flag_t *flag = &flags[flags_count ++];                                  \
+		i__flag_t *flag = &i__flags[i__flags_count ++];                         \
 		flag->type              = FLAG_TYPE;                                    \
 		flag->var.FIELD         = var;                                          \
 		flag->default_val.FIELD = *(var);                                       \
@@ -322,8 +322,8 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 		name[count] = '\0';
 
 		/* Get the flag pointer */
-		flag_t *flag = is_long? flag_get_by_long_name(name) :
-		               flag_get_by_short_name(name);
+		i__flag_t *flag = is_long? i__flag_get_by_long_name(name) :
+		                  i__flag_get_by_short_name(name);
 		if (flag == NULL)
 			return NOCH_PARSER_ERR("Unknown flag");
 
@@ -331,7 +331,7 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 		if (*arg == '=') {
 			++ arg;
 
-			if (flag_set_from_arg(flag, arg) != 0)
+			if (i__flag_set_from_arg(flag, arg) != 0)
 				return -1;
 		} else if (flag->type == FLAG_BOOL)
 			/* If there was no value in the flag, Set the flag to true if its a boolean flag */
@@ -346,7 +346,7 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 			if (i >= args->c)
 				return NOCH_PARSER_ERR("Missing value");
 
-			if (flag_set_from_arg(flag, (char*)args->v[i]) != 0)
+			if (i__flag_set_from_arg(flag, (char*)args->v[i]) != 0)
 				return -1;
 		}
 	}
@@ -368,7 +368,7 @@ end:
 NOCH_DEF void flags_usage_fprint(FILE *file) {
 	NOCH_ASSERT(file != NULL);
 
-	if (flags_count == 0)
+	if (i__flags_count == 0)
 		return;
 
 	/* Find the offset of the flag descriptions so all the descriptions are aligned, like so:
@@ -378,8 +378,8 @@ NOCH_DEF void flags_usage_fprint(FILE *file) {
 		  -f               Whatever description
 	*/
 	int longest = 0;
-	for (size_t i = 0; i < flags_count; ++ i) {
-		flag_t *flag = &flags[i];
+	for (size_t i = 0; i < i__flags_count; ++ i) {
+		i__flag_t *flag = &i__flags[i];
 
 		int len;
 		if (flag->short_name == NULL)
@@ -394,8 +394,8 @@ NOCH_DEF void flags_usage_fprint(FILE *file) {
 	}
 
 	/* Print all flags and align descriptions */
-	for (size_t i = 0; i < flags_count; ++ i) {
-		flag_t *flag = &flags[i];
+	for (size_t i = 0; i < i__flags_count; ++ i) {
+		i__flag_t *flag = &i__flags[i];
 
 		int len;
 		if (flag->short_name == NULL)
@@ -450,7 +450,7 @@ NOCH_DEF void args_usage_fprint(FILE *file, const char *name, const char **usage
 	if (desc != NULL) {
 		fprintf(file, "%s\n", desc);
 
-		if (flags_count > 0 && print_flags)
+		if (i__flags_count > 0 && print_flags)
 			fprintf(file, "\n");
 	}
 
