@@ -15,6 +15,13 @@ extern "C" {
 #define ARRAY_LEN(X)   (sizeof(X) / sizeof(*(X)))
 #define ZERO_STRUCT(X) memset(X, 0, sizeof(*(X)))
 
+#define SWAP(A, B, T) \
+	do {              \
+		T _tmp = A;   \
+		A = B;        \
+		B = _tmp;     \
+	} while (0)
+
 #define UNREACHABLE()                                             \
 	(fprintf(stderr, "%s:%i: Unreachable\n", __FILE__, __LINE__), \
 	 exit(EXIT_FAILURE))
