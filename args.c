@@ -339,18 +339,19 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 		} else if (flag->type == FLAG_BOOL)
 			/* If there was no value in the flag, Set the flag to true if its a boolean flag */
 			*flag->var.bool_ = true;
-		else if (flag->type == FLAG_STR)
-			/* If there was no value in the flag, Set the flag to
-			   an empty string if its a string flag */
-			*flag->var.str = "";
 		else {
 			/* Otherwise, read the next argument for the value */
 			++ i;
-			if (i >= args->c)
-				return NOCH_PARSER_ERR("Missing value");
-
-			if (i__flag_set_from_arg(flag, (char*)args->v[i]) != 0)
-				return -1;
+			if (i >= args->c) {
+				if (flag->type == FLAG_STR)
+					/* If there is no value for the flag, Set the flag to
+					   an empty string if its a string flag */
+					*flag->var.str = "";
+				else
+					return NOCH_PARSER_ERR("Missing value");
+			} else
+				if (i__flag_set_from_arg(flag, (char*)args->v[i]) != 0)
+					return -1;
 		}
 	}
 
