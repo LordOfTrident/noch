@@ -141,7 +141,7 @@ NOCH_DEF void log_generic(int color, const char *title, const char *path,
 
 		if (i__log_flags & LOG_FILE)
 			fprintf(i__log_file, "%s:", path);
-		else if (i__log_flags & LOG_LINE)
+		if (i__log_flags & LOG_LINE)
 			fprintf(i__log_file, "%lu:", (long unsigned)line);
 	}
 
