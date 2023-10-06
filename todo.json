@@ -1,0 +1,116 @@
+[
+	{
+		"type": "task",
+		"title": "common   - Common C functionalities",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "args     - Command line arguments/flags parser",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "attrs    - C attribute macros",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "colorer  - Colored terminal output",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "json     - JSON parser",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "log      - Logging functions",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "platform - Platform macros",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "sv       - String view",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "utf8     - UTF8 handling functions",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "unix     - Include this instead of <unistd.h>",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "win      - Include this instead of <windows.h>",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "darray   - Dynamic array",
+		"desc": null,
+		"done": false
+	},
+	{
+		"type": "task",
+		"title": "hash     - Hash map",
+		"desc": null,
+		"done": false
+	},
+	{
+		"type": "task",
+		"title": "fs       - Filesystem",
+		"desc": null,
+		"done": false
+	},
+	{
+		"type": "task",
+		"title": "builder  - C project builder",
+		"desc": null,
+		"done": false
+	},
+	{
+		"type": "task",
+		"title": "bytes    - Byte manipulation functions",
+		"desc": null,
+		"done": false
+	},
+	{
+		"type": "task",
+		"title": "region   - Region allocator",
+		"desc": null,
+		"done": false
+	},
+	{
+		"type": "task",
+		"title": "expr     - Math expression evaluator",
+		"desc": null,
+		"done": false
+	},
+	{
+		"type": "task",
+		"title": "ini      - INI parser",
+		"desc": null,
+		"done": false
+	}
+]

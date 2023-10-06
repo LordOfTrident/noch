@@ -1,6 +1,6 @@
 CFLAGS = -O2 -std=c99 -Wall -Wextra -Werror -pedantic -Wno-deprecated-declarations -g -I./
 
-examples: utf8 json args colorer log common
+examples: utf8 json args colorer log common sv
 
 bin:
 	mkdir -p bin
@@ -25,8 +25,12 @@ log: bin
 common: bin
 	$(CC) examples/common/common.c $(CFLAGS) -o bin/common
 
+sv: bin
+	$(CC) examples/sv/find.c $(CFLAGS) -o bin/sv_find
+	$(CC) examples/sv/trim.c $(CFLAGS) -o bin/sv_trim
+
 clean: bin
 	rm bin/*
 
 all:
-	@echo examples, utf8, json, args, colorer, log, common, clean
+	@echo examples, utf8, json, args, colorer, log, common, sv, clean
