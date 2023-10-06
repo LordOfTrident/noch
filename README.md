@@ -21,6 +21,7 @@ Not chol, A collection of useful [C99](https://en.wikipedia.org/wiki/C99) librar
 ## Table of contents
 * [Documentation](#documentation)
 * [Bugs](#bugs)
+* [TODO](./todo.md)
 
 ## Documentation
 **!MIGHT BE OUTDATED!**
