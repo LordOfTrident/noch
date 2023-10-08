@@ -11,8 +11,6 @@ int main(void) {
 	size_t  row, col;
 	json_t *json = json_from_file(path, &row, &col);
 	if (json == NULL) {
-		assert(noch_get_err() != NOCH_ERR_OUT_OF_MEM);
-
 		if (noch_get_err() == NOCH_ERR_PARSER)
 			printf("Error: %s:%i:%i: %s\n", path, (int)row, (int)col, noch_get_err_msg());
 		else

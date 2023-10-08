@@ -11,7 +11,6 @@ extern "C" {
 typedef enum {
 	NOCH_OK = 0,
 
-	NOCH_ERR_OUT_OF_MEM,
 	NOCH_ERR_FOPEN,
 	NOCH_ERR_FREAD,
 	NOCH_ERR_PARSER,

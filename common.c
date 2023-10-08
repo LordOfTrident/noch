@@ -12,10 +12,7 @@ NOCH_DEF char *xstrdup(const char *str) {
 	NOCH_ASSERT(str != NULL);
 
 	char *ptr = (char*)NOCH_ALLOC(strlen(str) + 1);
-	if (ptr == NULL) {
-		NOCH_OUT_OF_MEM();
-		return NULL;
-	}
+	NOCH_CHECK_ALLOC(ptr);
 
 	strcpy(ptr, str);
 	return ptr;

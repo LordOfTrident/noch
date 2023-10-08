@@ -259,8 +259,7 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 	   (allocate the same size as the original arguments so we dont have to do any reallocs) */
 	if (stripped != NULL) {
 		stripped->base = (char**)NOCH_ALLOC(sizeof(*stripped->v) * (args->c + 1));
-		if (stripped->base == NULL)
-			return NOCH_OUT_OF_MEM();
+		NOCH_CHECK_ALLOC(stripped->base);
 
 		stripped->v = (const char**)stripped->base;
 		stripped->c = 0;

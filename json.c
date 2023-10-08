@@ -29,10 +29,7 @@ static json_t i__json_null_instance;
 
 static json_t *i__json_new(json_type_t type) {
 	json_t *json = (json_t*)NOCH_ALLOC(sizeof(json_t));
-	if (json == NULL) {
-		NOCH_OUT_OF_MEM();
-		return NULL;
-	}
+	NOCH_CHECK_ALLOC(json);
 
 	memset(json, 0, sizeof(json_t));
 	json->type = type;
@@ -45,10 +42,7 @@ NOCH_DEF json_t *json_null(void) {
 
 static char *i__json_strdup(const char *str) {
 	char *duped = (char*)NOCH_ALLOC(strlen(str) + 1);
-	if (duped == NULL) {
-		NOCH_OUT_OF_MEM();
-		return NULL;
-	}
+	NOCH_CHECK_ALLOC(duped);
 
 	strcpy(duped, str);
 	return duped;
@@ -58,82 +52,46 @@ NOCH_DEF json_t *json_new_str(const char *str) {
 	NOCH_ASSERT(str != NULL);
 
 	json_t *json = i__json_new(JSON_STR);
-	if (json == NULL)
-		return NULL;
-
 	json->as.str.len = strlen(str);
 	json->as.str.buf = i__json_strdup(str);
-	if (json->as.str.buf == NULL) {
-		NOCH_FREE(json);
-		return NULL;
-	}
 
 	return json;
 }
 
 NOCH_DEF json_t *json_new_float(double float_) {
 	json_t *json = i__json_new(JSON_FLOAT);
-	if (json == NULL)
-		return NULL;
-
 	json->as.float_ = float_;
 	return json;
 }
 
 NOCH_DEF json_t *json_new_int64(int64_t int64) {
 	json_t *json = i__json_new(JSON_INT64);
-	if (json == NULL)
-		return NULL;
-
 	json->as.int64 = int64;
 	return json;
 }
 
 NOCH_DEF json_t *json_new_bool(bool bool_) {
 	json_t *json = i__json_new(JSON_BOOL);
-	if (json == NULL)
-		return NULL;
-
 	json->as.bool_ = bool_;
 	return json;
 }
 
 NOCH_DEF json_t *json_new_list(void) {
 	json_t *json = i__json_new(JSON_LIST);
-	if (json == NULL)
-		return NULL;
-
 	json->as.list.cap = JSON_LIST_CHUNK_SIZE;
 	json->as.list.buf = (json_t**)NOCH_ALLOC(json->as.list.cap * sizeof(json_t*));
-	if (json->as.list.buf == NULL) {
-		NOCH_FREE(json);
-		NOCH_OUT_OF_MEM();
-		return NULL;
-	}
-
+	NOCH_CHECK_ALLOC(json->as.list.buf);
 	return json;
 }
 
 NOCH_DEF json_t *json_new_obj(void) {
 	json_t *json = i__json_new(JSON_OBJ);
-	if (json == NULL)
-		return NULL;
-
 	json->as.obj.cap  = JSON_OBJ_CHUNK_SIZE;
 	json->as.obj.keys = (char**)NOCH_ALLOC(json->as.obj.cap * sizeof(char*));
-	if (json->as.obj.keys == NULL) {
-		NOCH_FREE(json);
-		NOCH_OUT_OF_MEM();
-		return NULL;
-	}
+	NOCH_CHECK_ALLOC(json->as.obj.keys);
 
 	json->as.obj.vals = (json_t**)NOCH_ALLOC(json->as.obj.cap * sizeof(json_t*));
-	if (json->as.obj.vals == NULL) {
-		NOCH_FREE(json->as.obj.keys);
-		NOCH_FREE(json);
-		NOCH_OUT_OF_MEM();
-		return NULL;
-	}
+	NOCH_CHECK_ALLOC(json->as.obj.vals);
 
 	return json;
 }
@@ -180,23 +138,17 @@ NOCH_DEF int json_obj_add(json_t *obj, const char *key, json_t *json) {
 
 	if (obj->as.obj.size >= obj->as.obj.cap) {
 		obj->as.obj.cap *= 2;
-		void *tmp = NOCH_REALLOC(obj->as.obj.keys, obj->as.obj.cap * sizeof(char*));
-		if (tmp == NULL)
-			return NOCH_OUT_OF_MEM();
-		else
-			obj->as.obj.keys = (char**)tmp;
+		obj->as.obj.keys = (char**)NOCH_REALLOC(obj->as.obj.keys, obj->as.obj.cap * sizeof(char*));
+		NOCH_CHECK_ALLOC(obj->as.obj.keys);
 
-		tmp = NOCH_REALLOC(obj->as.obj.vals, obj->as.obj.cap * sizeof(json_t*));
-		if (tmp == NULL)
-			return NOCH_OUT_OF_MEM();
-		else
-			obj->as.obj.vals = (json_t**)tmp;
+		obj->as.obj.vals = (json_t**)NOCH_REALLOC(obj->as.obj.vals,
+		                                          obj->as.obj.cap * sizeof(json_t*));
+		NOCH_CHECK_ALLOC(obj->as.obj.vals);
 	}
 
 	char **new_key = &obj->as.obj.keys[obj->as.obj.size];
 	*new_key = (char*)NOCH_ALLOC(strlen(key) + 1);
-	if (*new_key == NULL)
-		return NOCH_OUT_OF_MEM();
+	NOCH_CHECK_ALLOC(*new_key);
 
 	strcpy(*new_key, key);
 
@@ -211,11 +163,9 @@ NOCH_DEF int json_list_add(json_t *list, json_t *json) {
 
 	if (list->as.list.size >= list->as.list.cap) {
 		list->as.list.cap *= 2;
-		void *tmp = NOCH_REALLOC(list->as.list.buf, list->as.list.cap * sizeof(json_t*));
-		if (tmp == NULL)
-			return NOCH_OUT_OF_MEM();
-		else
-			list->as.list.buf = (json_t**)tmp;
+		list->as.list.buf = (json_t**)NOCH_REALLOC(list->as.list.buf,
+		                                           list->as.list.cap * sizeof(json_t*));
+		NOCH_CHECK_ALLOC(list->as.list.buf);
 	}
 
 	list->as.list.buf[list->as.list.size ++] = json;
@@ -263,11 +213,8 @@ static int i__jsons_print(i__jsons_t *s, const char *str) {
 				s->cap *= 2;
 			while (s->size + 1 >= s->cap);
 
-			void *tmp = NOCH_REALLOC(s->buf, s->cap);
-			if (tmp == NULL)
-				return NOCH_OUT_OF_MEM();
-			else
-				s->buf = (char*)tmp;
+			s->buf = (char*)NOCH_REALLOC(s->buf, s->cap);
+			NOCH_CHECK_ALLOC(s->buf);
 		}
 
 		strcpy(s->buf + prev, str);
@@ -367,11 +314,8 @@ static int i__jsons_indent(i__jsons_t *s, size_t nest) {
 				s->cap *= 2;
 			while (s->size + 1 >= s->cap);
 
-			void *tmp = NOCH_REALLOC(s->buf, s->cap);
-			if (tmp == NULL)
-				return NOCH_OUT_OF_MEM();
-			else
-				s->buf = (char*)tmp;
+			s->buf = (char*)NOCH_REALLOC(s->buf, s->cap);
+			NOCH_CHECK_ALLOC(s->buf);
 		}
 
 		memset(s->buf + prev, '\t', nest);
@@ -455,8 +399,7 @@ NOCH_DEF char *json_stringify(json_t *json) {
 	i__jsons_t s = {0};
 	s.cap        = JSON_STRINGIFY_CHUNK_SIZE;
 	s.buf        = (char*)NOCH_ALLOC(s.cap);
-	if (s.buf == NULL)
-		return NULL;
+	NOCH_CHECK_ALLOC(s.buf);
 
 	return i__jsons_print_json(&s, json, 0, false) == 0? s.buf : NULL;
 }
@@ -509,11 +452,8 @@ static void i__jsonp_data_clear(i__jsonp_t *p) {
 static int i__jsonp_data_add(i__jsonp_t *p, char ch) {
 	if (p->data_size + 1 >= p->data_cap) {
 		p->data_cap *= 2;
-		void *tmp = NOCH_REALLOC(p->data, p->data_cap);
-		if (tmp == NULL)
-			return NOCH_OUT_OF_MEM();
-		else
-			p->data = (char*)tmp;
+		p->data = (char*)NOCH_REALLOC(p->data, p->data_cap);
+		NOCH_CHECK_ALLOC(p->data);
 	}
 
 	p->data[p->data_size ++] = ch;
@@ -828,8 +768,6 @@ static json_t *i__jsonp_parse_obj(i__jsonp_t *p) {
 	while (p->tok != JSON_TOK_RCURLY) {
 		JSONP_TOK_MUST_BE(p, JSON_TOK_STR, "Expected a key string");
 		char *key = i__json_strdup(p->data);
-		if (key == NULL)
-			goto fail;
 
 		JSONP_MUST_ADVANCE(p);
 		JSONP_TOK_MUST_BE(p, JSON_TOK_COLON, "Expected a \":\"");
@@ -940,10 +878,7 @@ NOCH_DEF json_t *json_from_file(const char *path, size_t *row, size_t *col) {
 	}
 
 	char *in = (char*)NOCH_ALLOC(size + 1);
-	if (in == NULL) {
-		NOCH_OUT_OF_MEM();
-		return NULL;
-	}
+	NOCH_CHECK_ALLOC(in);
 
 	if (fread(in, size, 1, file) <= 0) {
 		NOCH_FREAD_FAIL();
@@ -970,10 +905,7 @@ NOCH_DEF json_t *json_from_mem(const char *in, size_t *row, size_t *col) {
 
 	p.data_cap = JSONP_TOK_CAP;
 	p.data     = (char*)NOCH_ALLOC(p.data_cap);
-	if (p.data == NULL) {
-		NOCH_OUT_OF_MEM();
-		return NULL;
-	}
+	NOCH_CHECK_ALLOC(p.data);
 
 #undef JSONP_TOK_CAP
 

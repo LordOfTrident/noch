@@ -73,7 +73,13 @@
 	},
 	{
 		"type": "task",
-		"title": "`hash`     - Hash map",
+		"title": "`hmap`     - Hash map",
+		"desc": null,
+		"done": true
+	},
+	{
+		"type": "task",
+		"title": "`dstring`  - Dynamic string",
 		"desc": null,
 		"done": false
 	},
@@ -103,7 +109,7 @@
 	},
 	{
 		"type": "task",
-		"title": "`expr`     - Math expression evaluator",
+		"title": "`expr`     - Math expression parser/evaluator",
 		"desc": null,
 		"done": false
 	},

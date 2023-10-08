@@ -10,7 +10,6 @@ extern "C" {
 static const char *noch_err_to_str_map[NOCH_ERRS_COUNT] = {
 	"Ok", /* NOCH_OK */
 
-	"Out of memory",                   /* NOCH_ERR_OUT_OF_MEM */
 	"Failed to open file",             /* NOCH_ERR_FOPEN */
 	"Failed to read from file stream", /* NOCH_ERR_FREAD */
 	"Error while parsing",             /* NOCH_ERR_PARSER */
@@ -19,12 +18,17 @@ static const char *noch_err_to_str_map[NOCH_ERRS_COUNT] = {
 noch_err_t  noch_err;
 const char *noch_err_msg = "Ok";
 
-#define NOCH_OUT_OF_MEM()    noch_set_err(NOCH_ERR_OUT_OF_MEM, NULL)
 #define NOCH_FOPEN_FAIL()    noch_set_err(NOCH_ERR_FOPEN,      NULL)
 #define NOCH_FREAD_FAIL()    noch_set_err(NOCH_ERR_FREAD,      NULL)
 #define NOCH_PARSER_ERR(MSG) noch_set_err(NOCH_ERR_PARSER,     MSG)
 
-static int noch_set_err(noch_err_t err, const char *msg) {
+#define NOCH_CHECK_ALLOC(PTR)                  \
+	do {                                       \
+		if (PTR == NULL)                       \
+			NOCH_ASSERT(0 && "Out of memory"); \
+	} while (0)
+
+int noch_set_err(noch_err_t err, const char *msg) {
 	NOCH_ASSERT(err < NOCH_ERRS_COUNT && err >= 0);
 	noch_err     = err;
 	noch_err_msg = msg == NULL? noch_err_to_str_map[err] : msg;
