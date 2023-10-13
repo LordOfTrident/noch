@@ -109,9 +109,9 @@
 	},
 	{
 		"type": "task",
-		"title": "`expr`     - Math expression parser/evaluator",
+		"title": "`mexpr`    - Math expression parser/evaluator",
 		"desc": null,
-		"done": false
+		"done": true
 	},
 	{
 		"type": "task",

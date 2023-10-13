@@ -2,11 +2,14 @@
 extern "C" {
 #endif
 
+#include "internal/private.h"
 #include "internal/alloc.h"
 #include "internal/assert.h"
 #include "internal/err.c"
 
 #include "args.h"
+
+#define hmap_find NOCH_PRIVATE(hmap_find)
 
 #define HMAPE_SIZE(THIS)   (sizeof(hmape_t) + (THIS)->valsz)
 #define HMAPE_VAL(THIS, E) (void*)((char*)(E) + sizeof(hmape_t))
@@ -34,7 +37,7 @@ NOCH_DEF void hmap_deinit(hmap_t *this) {
 	NOCH_FREE(this->buf);
 }
 
-static hmape_t *i__hmap_find(hmap_t *this, const char *key) {
+static hmape_t *hmap_find(hmap_t *this, const char *key) {
 	unsigned hash = this->hash(key);
 	size_t   idx  = hash % this->cap;
 
@@ -61,7 +64,7 @@ static hmape_t *i__hmap_find(hmap_t *this, const char *key) {
 }
 
 NOCH_DEF int hmap_remove(hmap_t *this, const char *key) {
-	hmape_t *e = i__hmap_find(this, key);
+	hmape_t *e = hmap_find(this, key);
 	if (e == NULL)
 		return -1;
 
@@ -75,7 +78,7 @@ NOCH_DEF int hmap_remove(hmap_t *this, const char *key) {
 }
 
 NOCH_DEF void *hmap_get(hmap_t *this, const char *key) {
-	hmape_t *e = i__hmap_find(this, key);
+	hmape_t *e = hmap_find(this, key);
 	if (e == NULL)
 		return NULL;
 
@@ -138,6 +141,8 @@ NOCH_DEF unsigned default_hash(const char *str) {
 
 	return hash;
 }
+
+#undef hmap_find
 
 #ifdef __cplusplus
 }

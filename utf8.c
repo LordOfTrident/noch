@@ -2,11 +2,14 @@
 extern "C" {
 #endif
 
+#include "internal/private.h"
 #include "internal/assert.h"
 
 #include "utf8.h"
 
-static uint8_t i__u8_rune_size_map[256] = {
+#define u8_rune_size_map NOCH_PRIVATE(u8_rune_size_map)
+
+static uint8_t u8_rune_size_map[256] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -18,7 +21,7 @@ static uint8_t i__u8_rune_size_map[256] = {
 };
 
 NOCH_DEF size_t u8_rune_size(char cp) {
-	return (size_t)i__u8_rune_size_map[(uint8_t)cp];
+	return (size_t)u8_rune_size_map[(uint8_t)cp];
 }
 
 NOCH_DEF size_t rune_size(rune_t r) {
@@ -279,6 +282,8 @@ NOCH_DEF const char *u8_str_find_rune_ci(const char *str, rune_t find, size_t *i
 
 	return NULL;
 }
+
+#undef u8_rune_size_map
 
 #ifdef __cplusplus
 }

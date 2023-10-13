@@ -2,11 +2,25 @@
 extern "C" {
 #endif
 
+#include "internal/private.h"
+
 #include "colorer.h"
+
+#define fg_color_to_attr NOCH_PRIVATE(fg_color_to_attr)
+#define bg_color_to_attr NOCH_PRIVATE(bg_color_to_attr)
+#define fg_color         NOCH_PRIVATE(fg_color)
+#define bg_color         NOCH_PRIVATE(bg_color)
+#define stdout_handle    NOCH_PRIVATE(stdout_handle)
+#define stderr_handle    NOCH_PRIVATE(stderr_handle)
+#define prev_csbi        NOCH_PRIVATE(prev_csbi)
+#define file_to_handle   NOCH_PRIVATE(file_to_handle)
+#define fg_color_to_ansi NOCH_PRIVATE(fg_color_to_ansi)
+#define bg_color_to_ansi NOCH_PRIVATE(bg_color_to_ansi)
+#define has_color        NOCH_PRIVATE(has_color)
 
 #ifdef PLATFORM_WINDOWS
 
-static WORD i__color_to_win_attr_fg[] = {
+static WORD fg_color_to_attr[] = {
 	/* COLOR_BLACK   */ 0,
 	/* COLOR_RED     */ FOREGROUND_RED,
 	/* COLOR_GREEN   */ FOREGROUND_GREEN,
@@ -16,7 +30,7 @@ static WORD i__color_to_win_attr_fg[] = {
 	/* COLOR_CYAN    */ FOREGROUND_GREEN | FOREGROUND_BLUE,
 	/* COLOR_WHITE   */ FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
 
-	/* COLOR_GREY          */ FOREGROUND_INTENSITY,
+	/* COLOR_GREY           */ FOREGROUND_INTENSITY,
 	/* COLOR_BRIGHT_RED     */ FOREGROUND_RED | FOREGROUND_INTENSITY,
 	/* COLOR_BRIGHT_GREEN   */ FOREGROUND_GREEN | FOREGROUND_INTENSITY,
 	/* COLOR_BRIGHT_YELLOW  */ FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
@@ -27,7 +41,7 @@ static WORD i__color_to_win_attr_fg[] = {
 	                           FOREGROUND_INTENSITY,
 };
 
-static WORD i__color_to_win_attr_bg[] = {
+static WORD bg_color_to_attr[] = {
 	/* COLOR_BLACK   */ 0,
 	/* COLOR_RED     */ BACKGROUND_RED,
 	/* COLOR_GREEN   */ BACKGROUND_GREEN,
@@ -48,26 +62,26 @@ static WORD i__color_to_win_attr_bg[] = {
 	                           BACKGROUND_INTENSITY,
 };
 
-static WORD i__current_fg_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-static WORD i__current_bg_color = 0;
+static WORD fg_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+static WORD bg_color = 0;
 
-static HANDLE i__win_stdout_handle;
-static HANDLE i__win_stderr_handle;
+static HANDLE stdout_handle;
+static HANDLE stderr_handle;
 
-static CONSOLE_SCREEN_BUFFER_INFO i__orig_csbi;
+static CONSOLE_SCREEN_BUFFER_INFO prev_csbi;
 
-static HANDLE i__file_to_win_handle(FILE *file) {
+static HANDLE file_to_handle(FILE *file) {
 	if (file == stdout)
-		return i__win_stdout_handle;
+		return stdout_handle;
 	else if (file == stderr)
-		return i__win_stderr_handle;
+		return stderr_handle;
 	else
 		return INVALID_HANDLE_VALUE;
 }
 
 #else
 
-static const char *i__color_to_esc_seq_fg[] = {
+static const char *fg_color_to_ansi[] = {
 	/* COLOR_BLACK   */ "\x1b[30m",
 	/* COLOR_RED     */ "\x1b[31m",
 	/* COLOR_GREEN   */ "\x1b[32m",
@@ -87,7 +101,7 @@ static const char *i__color_to_esc_seq_fg[] = {
 	/* COLOR_BRIGHT_WHITE   */ "\x1b[97m",
 };
 
-static const char *i__color_to_esc_seq_bg[] = {
+static const char *bg_color_to_ansi[] = {
 	/* COLOR_BLACK   */ "\x1b[40m",
 	/* COLOR_RED     */ "\x1b[41m",
 	/* COLOR_GREEN   */ "\x1b[42m",
@@ -109,62 +123,62 @@ static const char *i__color_to_esc_seq_bg[] = {
 
 #endif
 
-static bool i__file_can_be_colored(FILE *file) {
+static bool has_color(FILE *file) {
 	return file == stdout || file == stderr;
 }
 
 NOCH_DEF void init_color(void) {
 #ifdef PLATFORM_WINDOWS
-	i__win_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	i__win_stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+	stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
 
-	GetConsoleScreenBufferInfo(i__win_stdout_handle, &i__orig_csbi);
+	GetConsoleScreenBufferInfo(stdout_handle, &prev_csbi);
 #endif
 }
 
 NOCH_DEF void freset_color(FILE *file) {
-	if (!i__file_can_be_colored(file))
+	if (!has_color(file))
 		return;
 
 #ifdef PLATFORM_WINDOWS
-	SetConsoleTextAttribute(i__file_to_win_handle(file), i__orig_csbi.wAttributes);
+	SetConsoleTextAttribute(file_to_handle(file), prev_csbi.wAttributes);
 #else
 	fputs("\x1b[0m", file);
 #endif
 }
 
 NOCH_DEF void fhighlight_fg(FILE *file) {
-	if (!i__file_can_be_colored(file))
+	if (!has_color(file))
 		return;
 
 #ifdef PLATFORM_WINDOWS
-	i__current_fg_color |= FOREGROUND_INTENSITY;
+	fg_color |= FOREGROUND_INTENSITY;
 #else
 	fputs("\x1b[1m", file);
 #endif
 }
 
 NOCH_DEF void fset_fg_color(FILE *file, int color) {
-	if (!i__file_can_be_colored(file))
+	if (!has_color(file))
 		return;
 
 #ifdef WIN32
-	i__current_fg_color = i__color_to_win_attr_fg[color];
-	SetConsoleTextAttribute(i__file_to_win_handle(file), i__current_fg_color | i__current_bg_color);
+	fg_color = fg_color_to_attr[color];
+	SetConsoleTextAttribute(file_to_handle(file), fg_color | bg_color);
 #else
-	fputs(i__color_to_esc_seq_fg[color], file);
+	fputs(fg_color_to_ansi[color], file);
 #endif
 }
 
 NOCH_DEF void fset_bg_color(FILE *file, int color) {
-	if (!i__file_can_be_colored(file))
+	if (!has_color(file))
 		return;
 
 #ifdef WIN32
-	i__current_bg_color = i__color_to_win_attr_bg[color];
-	SetConsoleTextAttribute(i__file_to_win_handle(file), i__current_fg_color | i__current_bg_color);
+	bg_color = bg_color_to_attr[color];
+	SetConsoleTextAttribute(file_to_handle(file), fg_color | bg_color);
 #else
-	fputs(i__color_to_esc_seq_bg[color], file);
+	fputs(bg_color_to_ansi[color], file);
 #endif
 }
 
@@ -264,6 +278,18 @@ NOCH_DEF void printf_color(const char *fmt, ...) {
 
 	fprintf_color(stdout, str);
 }
+
+#undef fg_color_to_attr
+#undef bg_color_to_attr
+#undef fg_color
+#undef bg_color
+#undef stdout_handle
+#undef stderr_handle
+#undef prev_csbi
+#undef file_to_handle
+#undef fg_color_to_ansi
+#undef bg_color_to_ansi
+#undef has_color
 
 #ifdef __cplusplus
 }

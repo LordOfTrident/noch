@@ -6,7 +6,7 @@
 #include "../../args.h" /* Declarations */
 #include "../../args.c" /* Implementation */
 
-#define DESC "Draw a triangle or a rectangle in the terminal"
+#define DESC "Draw a line in the terminal"
 const char *usages[] = {
 	"[OPTIONS]",
 	"vertical [OPTIONS]      Draw a vertical line",

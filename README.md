@@ -14,7 +14,9 @@
 	<br><br><br>
 </p>
 
-**!THIS LIBRARY IS A WORK IN PROGRESS!**
+> [!NOTE]<br>
+> This library is a **work in progress**!
+> Anything might change at any time.
 
 Not chol, A collection of useful [C99](https://en.wikipedia.org/wiki/C99) libraries.
 
@@ -24,7 +26,8 @@ Not chol, A collection of useful [C99](https://en.wikipedia.org/wiki/C99) librar
 * [TODO](./todo.md)
 
 ## Documentation
-**!MIGHT BE OUTDATED!**
+> [!NOTE]<br>
+> Documentation might be outdated
 
 Hosted [here](https://lordoftrident.github.io/docs/noch/)
 

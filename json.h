@@ -39,7 +39,7 @@ const char *json_type_to_str(json_type_t type);
 #endif
 
 #ifndef JSON_OBJ_CHUNK_SIZE
-#	define JSON_OBJ_CHUNK_SIZE 32
+#	define JSON_OBJ_CHUNK_SIZE 64
 #endif
 
 #ifndef JSON_STRINGIFY_CHUNK_SIZE
