@@ -4,7 +4,6 @@ extern "C" {
 
 #include "internal/private.h"
 #include "internal/alloc.h"
-#include "internal/assert.h"
 #include "internal/err.c"
 
 #include "json.h"
