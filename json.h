@@ -92,27 +92,27 @@ typedef struct {
 	size_t   cap, size;
 } json_obj_t;
 
-#define JSON_AS_STR(JSON)                   \
+#define JSON_STR(JSON)                      \
 	(NOCH_ASSERT((JSON)->type == JSON_STR), \
 	 (json_str_t*)(JSON))
 
-#define JSON_AS_FLOAT(JSON)                   \
+#define JSON_FLOAT(JSON)                      \
 	(NOCH_ASSERT((JSON)->type == JSON_FLOAT), \
 	 (json_float_t*)(JSON))
 
-#define JSON_AS_INT(JSON)                   \
+#define JSON_INT(JSON)                      \
 	(NOCH_ASSERT((JSON)->type == JSON_INT), \
 	 (json_int_t*)(JSON))
 
-#define JSON_AS_BOOL(JSON)                   \
+#define JSON_BOOL(JSON)                      \
 	(NOCH_ASSERT((JSON)->type == JSON_BOOL), \
 	 (json_bool_t*)(JSON))
 
-#define JSON_AS_LIST(JSON)                   \
+#define JSON_LIST(JSON)                      \
 	(NOCH_ASSERT((JSON)->type == JSON_LIST), \
 	 (json_list_t*)(JSON))
 
-#define JSON_AS_OBJ(JSON)                   \
+#define JSON_OBJ(JSON)                      \
 	(NOCH_ASSERT((JSON)->type == JSON_OBJ), \
 	 (json_obj_t*)(JSON))
 

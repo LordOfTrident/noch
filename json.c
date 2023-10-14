@@ -142,13 +142,13 @@ NOCH_DEF void json_destroy(json_t *json) {
 
 	switch (json->type) {
 	case JSON_NULL:  return;
-	case JSON_STR:   NOCH_FREE(JSON_AS_STR(json)->buf);
+	case JSON_STR:   NOCH_FREE(JSON_STR(json)->buf);
 	case JSON_FLOAT: break;
 	case JSON_INT:   break;
 	case JSON_BOOL:  break;
 
 	case JSON_LIST: {
-		json_list_t *list = JSON_AS_LIST(json);
+		json_list_t *list = JSON_LIST(json);
 
 		for (size_t i = 0; i < list->size; ++ i)
 			json_destroy(list->buf[i]);
@@ -157,7 +157,7 @@ NOCH_DEF void json_destroy(json_t *json) {
 	} break;
 
 	case JSON_OBJ: {
-		json_obj_t *obj = JSON_AS_OBJ(json);
+		json_obj_t *obj = JSON_OBJ(json);
 
 		for (size_t i = 0; i < obj->size; ++ i) {
 			NOCH_FREE(obj->keys[i]);
@@ -373,23 +373,23 @@ static int jstream_print_json(jstream_t *this, json_t *json, size_t nest, bool c
 		break;
 
 	case JSON_STR:
-		JSTREAM_MUST(jstream_print_str(this, JSON_AS_STR(json)));
+		JSTREAM_MUST(jstream_print_str(this, JSON_STR(json)));
 		break;
 
 	case JSON_FLOAT:
-		JSTREAM_MUST(jstream_print_float(this, JSON_AS_FLOAT(json)->val));
+		JSTREAM_MUST(jstream_print_float(this, JSON_FLOAT(json)->val));
 		break;
 
 	case JSON_INT:
-		JSTREAM_PRINTF(this, "%lli", JSON_AS_INT(json)->val);
+		JSTREAM_PRINTF(this, "%lli", JSON_INT(json)->val);
 		break;
 
 	case JSON_BOOL:
-		JSTREAM_PRINTF(this, "%s", JSON_AS_BOOL(json)->val? "true" : "false");
+		JSTREAM_PRINTF(this, "%s", JSON_BOOL(json)->val? "true" : "false");
 		break;
 
 	case JSON_LIST: {
-		json_list_t *list = JSON_AS_LIST(json);
+		json_list_t *list = JSON_LIST(json);
 
 		++ nest;
 		JSTREAM_PRINT(this, "[");
@@ -405,7 +405,7 @@ static int jstream_print_json(jstream_t *this, json_t *json, size_t nest, bool c
 	} break;
 
 	case JSON_OBJ: {
-		json_obj_t *obj = JSON_AS_OBJ(json);
+		json_obj_t *obj = JSON_OBJ(json);
 
 		++ nest;
 		JSTREAM_PRINT(this, "{");
