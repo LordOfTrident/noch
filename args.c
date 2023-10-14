@@ -298,7 +298,7 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 					has_extra   = true;
 					extra_where = i + 1;
 				}
-				goto end;
+				break;
 			} else {
 				flags_end = true;
 				continue;
@@ -368,7 +368,6 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 		}
 	}
 
-end:
 	if (stripped != NULL)
 		stripped->v[stripped->c] = NULL;
 
