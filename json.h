@@ -116,6 +116,78 @@ typedef struct {
 	(NOCH_ASSERT((JSON)->type == JSON_OBJ), \
 	 (json_obj_t*)(JSON))
 
+#define JSON_EXPECT_STR(STR, JSON, ...)              \
+	do {                                             \
+		json_t *_recieved_json = JSON;               \
+		if (_recieved_json == NULL)                  \
+			STR = NULL;                              \
+		else if (_recieved_json->type != JSON_STR) { \
+			STR = NULL;                              \
+			__VA_ARGS__                              \
+		} else                                       \
+			STR = JSON_STR(_recieved_json);          \
+	} while (0)
+
+#define JSON_EXPECT_FLOAT(FLOAT, JSON, ...)            \
+	do {                                               \
+		json_t *_recieved_json = JSON;                 \
+		if (_recieved_json == NULL)                    \
+			FLOAT = NULL;                              \
+		else if (_recieved_json->type != JSON_FLOAT) { \
+			FLOAT = NULL;                              \
+			__VA_ARGS__                                \
+		} else                                         \
+			FLOAT = JSON_FLOAT(_recieved_json);        \
+	} while (0)
+
+#define JSON_EXPECT_INT(INT, JSON, ...)              \
+	do {                                             \
+		json_t *_recieved_json = JSON;               \
+		if (_recieved_json == NULL)                  \
+			INT = NULL;                              \
+		else if (_recieved_json->type != JSON_INT) { \
+			INT = NULL;                              \
+			__VA_ARGS__                              \
+		} else                                       \
+			INT = JSON_INT(_recieved_json);          \
+	} while (0)
+
+#define JSON_EXPECT_BOOL(BOOL, JSON, ...)             \
+	do {                                              \
+		json_t *_recieved_json = JSON;                \
+		if (_recieved_json == NULL)                   \
+			BOOL = NULL;                              \
+		else if (_recieved_json->type != JSON_BOOL) { \
+			BOOL = NULL;                              \
+			__VA_ARGS__                               \
+		} else                                        \
+			BOOL = JSON_BOOL(_recieved_json);         \
+	} while (0)
+
+#define JSON_EXPECT_LIST(LIST, JSON, ...)             \
+	do {                                              \
+		json_t *_recieved_json = JSON;                \
+		if (_recieved_json == NULL)                   \
+			LIST = NULL;                              \
+		else if (_recieved_json->type != JSON_LIST) { \
+			LIST = NULL;                              \
+			__VA_ARGS__                               \
+		} else                                        \
+			LIST = JSON_LIST(_recieved_json);         \
+	} while (0)
+
+#define JSON_EXPECT_OBJ(OBJ, JSON, ...)              \
+	do {                                             \
+		json_t *_recieved_json = JSON;               \
+		if (_recieved_json == NULL)                  \
+			OBJ = NULL;                              \
+		else if (_recieved_json->type != JSON_OBJ) { \
+			OBJ = NULL;                              \
+			__VA_ARGS__                              \
+		} else                                       \
+			OBJ = JSON_OBJ(_recieved_json);          \
+	} while (0)
+
 NOCH_DEF json_t *json_null(void);
 
 NOCH_DEF json_str_t   *json_new_str  (const char *val);

@@ -9,8 +9,14 @@ int main(void) {
 	printf("Reading '%s'\n", path);
 
 	size_t  row, col;
-	json_t *json = json_from_file(path, &row, &col);
-	if (json == NULL) {
+	json_obj_t *obj;
+	JSON_EXPECT_OBJ(obj, json_from_file(path, &row, &col), {
+		printf("Error: %s: Expected data to be an object, got %s\n",
+		       path, json_type_to_str(_recieved_json->type));
+		return EXIT_FAILURE;
+	});
+
+	if (obj == NULL) {
 		if (noch_get_err() == NOCH_ERR_PARSER)
 			printf("Error: %s:%i:%i: %s\n", path, (int)row, (int)col, noch_get_err_msg());
 		else
@@ -19,7 +25,7 @@ int main(void) {
 		return EXIT_FAILURE;
 	}
 
-	json_fprint(json, stdout);
-	json_destroy(json);
+	JSON_FPRINT(obj, stdout);
+	JSON_DESTROY(obj);
 	return 0;
 }
