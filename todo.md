@@ -1,4 +1,4 @@
-# TODO (57% done)
+# TODO (60% done)
 - [X] `common`   - Common C functionalities
 - [X] `args`     - Command line arguments/flags parser
 - [X] `attrs`    - C attribute macros
@@ -11,10 +11,11 @@
 - [X] `unix`     - Include this instead of <unistd.h>
 - [X] `win`      - Include this instead of <windows.h>
 - [ ] `darray`   - Dynamic array
-- [ ] `hash`     - Hash map
+- [X] `hmap`     - Hash map
+- [ ] `dstring`  - Dynamic string
 - [ ] `fs`       - Filesystem
 - [ ] `builder`  - C project builder
 - [ ] `bytes`    - Byte manipulation functions
 - [ ] `region`   - Region allocator
-- [ ] `expr`     - Math expression evaluator
+- [ ] `mexpr`    - Math expression parser/evaluator
 - [ ] `ini`      - INI parser
