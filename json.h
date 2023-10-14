@@ -17,6 +17,7 @@ extern "C" {
 
 #include "internal/def.h"
 #include "internal/err.h"
+#include "internal/assert.h"
 
 typedef enum {
 	JSON_NULL = 0,
