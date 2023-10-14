@@ -128,14 +128,22 @@ NOCH_DEF json_obj_t  *json_new_obj (void);
 
 NOCH_DEF void json_destroy(json_t *json);
 
+#define JSON_DESTROY(JSON) json_destroy((json_t*)JSON)
+
 NOCH_DEF int json_obj_add (json_obj_t  *obj,  const char *key, json_t *json);
 NOCH_DEF int json_list_add(json_list_t *list, json_t *json);
+
+#define JSON_OBJ_ADD(OBJ, KEY, JSON) json_obj_add (OBJ, KEY, (json_t*)(JSON))
+#define JSON_LIST_ADD(LIST, JSON)    json_list_add(LIST, (json_t*)(JSON))
 
 NOCH_DEF json_t *json_obj_at (json_obj_t  *this, const char *key);
 NOCH_DEF json_t *json_list_at(json_list_t *this, size_t idx);
 
 NOCH_DEF void  json_fprint   (json_t *json, FILE *file);
 NOCH_DEF char *json_stringify(json_t *json);
+
+#define JSON_FPRINT(JSON, FILE) json_fprint   ((json_t*)JSON, FILE)
+#define JSON_STRINGIFY(JSON)    json_stringify((json_t*)JSON)
 
 NOCH_DEF json_t *json_from_file(const char *path, size_t *row, size_t *col);
 NOCH_DEF json_t *json_from_mem (const char *in,   size_t *row, size_t *col);
