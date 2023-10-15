@@ -73,10 +73,10 @@ static char *json_strdup(const char *str) {
 	return duped;
 }
 
-#define JSON_ALLOC(TO, TYPE)                  \
-	do {                                      \
-		NOCH_MUST_ALLOC(TYPE, TO, 1);         \
-		memset(TO, 0, sizeof(TYPE));          \
+#define JSON_ALLOC(TO, TYPE)          \
+	do {                              \
+		NOCH_MUST_ALLOC(TYPE, TO, 1); \
+		memset(TO, 0, sizeof(TYPE));  \
 	} while (0)
 
 NOCH_DEF json_str_t *json_new_str(const char *val) {
