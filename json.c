@@ -35,6 +35,12 @@ extern "C" {
 #define jparser_parse             NOCH_PRIVATE(jparser_parse)
 #define jparser_parse_obj         NOCH_PRIVATE(jparser_parse_obj)
 #define jparser_parse_list        NOCH_PRIVATE(jparser_parse_list)
+#define jparser_err               NOCH_PRIVATE(jparser_err)
+#define jparser_col               NOCH_PRIVATE(jparser_col)
+#define jparser_create_data_copy  NOCH_PRIVATE(jparser_create_data_copy)
+#define jparser_init              NOCH_PRIVATE(jparser_init)
+#define jparser_deinit            NOCH_PRIVATE(jparser_deinit)
+#define jparser_expect_input_end  NOCH_PRIVATE(jparser_expect_input_end)
 
 const char *json_type_to_str_map[JSON_TYPES_COUNT] = {
 	"null", /* JSON_NULL */
@@ -60,8 +66,8 @@ NOCH_DEF json_t *json_null(void) {
 }
 
 static char *json_strdup(const char *str) {
-	char *duped = (char*)NOCH_ALLOC(strlen(str) + 1);
-	NOCH_CHECK_ALLOC(duped);
+	char *duped;
+	NOCH_MUST_ALLOC(char, duped, strlen(str) + 1);
 
 	strcpy(duped, str);
 	return duped;
@@ -69,8 +75,7 @@ static char *json_strdup(const char *str) {
 
 #define JSON_ALLOC(TO, TYPE)                  \
 	do {                                      \
-		TO = (TYPE*)NOCH_ALLOC(sizeof(TYPE)); \
-		NOCH_CHECK_ALLOC(TO);                 \
+		NOCH_MUST_ALLOC(TYPE, TO, 1);         \
 		memset(TO, 0, sizeof(TYPE));          \
 	} while (0)
 
@@ -119,8 +124,7 @@ NOCH_DEF json_list_t *json_new_list(void) {
 	list->_.type = JSON_LIST;
 
 	list->cap = JSON_LIST_CHUNK_SIZE;
-	list->buf = (json_t**)NOCH_ALLOC(list->cap * sizeof(json_t*));
-	NOCH_CHECK_ALLOC(list->buf);
+	NOCH_MUST_ALLOC(json_t*, list->buf, list->cap);
 	return list;
 }
 
@@ -129,11 +133,9 @@ NOCH_DEF json_obj_t *json_new_obj(void) {
 	JSON_ALLOC(obj, json_obj_t);
 	obj->_.type = JSON_OBJ;
 
-	obj->cap  = JSON_OBJ_CHUNK_SIZE;
-	obj->keys = (char**)NOCH_ALLOC(obj->cap * sizeof(char*));
-	NOCH_CHECK_ALLOC(obj->keys);
-	obj->vals = (json_t**)NOCH_ALLOC(obj->cap * sizeof(json_t*));
-	NOCH_CHECK_ALLOC(obj->vals);
+	obj->cap = JSON_OBJ_CHUNK_SIZE;
+	NOCH_MUST_ALLOC(char*,   obj->keys, obj->cap);
+	NOCH_MUST_ALLOC(json_t*, obj->vals, obj->cap);
 	return obj;
 }
 
@@ -181,16 +183,12 @@ NOCH_DEF int json_obj_add(json_obj_t *obj, const char *key, json_t *json) {
 
 	if (obj->size >= obj->cap) {
 		obj->cap *= 2;
-		obj->keys = (char**)NOCH_REALLOC(obj->keys, obj->cap * sizeof(char*));
-		NOCH_CHECK_ALLOC(obj->keys);
-
-		obj->vals = (json_t**)NOCH_REALLOC(obj->vals, obj->cap * sizeof(json_t*));
-		NOCH_CHECK_ALLOC(obj->vals);
+		NOCH_MUST_REALLOC(char*,   obj->keys, obj->cap);
+		NOCH_MUST_REALLOC(json_t*, obj->vals, obj->cap);
 	}
 
 	char **new_key = &obj->keys[obj->size];
-	*new_key = (char*)NOCH_ALLOC(strlen(key) + 1);
-	NOCH_CHECK_ALLOC(*new_key);
+	NOCH_MUST_ALLOC(char, *new_key, strlen(key) + 1);
 	strcpy(*new_key, key);
 
 	obj->vals[obj->size ++] = json;
@@ -203,8 +201,7 @@ NOCH_DEF int json_list_add(json_list_t *list, json_t *json) {
 
 	if (list->size >= list->cap) {
 		list->cap *= 2;
-		list->buf = (json_t**)NOCH_REALLOC(list->buf, list->cap * sizeof(json_t*));
-		NOCH_CHECK_ALLOC(list->buf);
+		NOCH_MUST_REALLOC(json_t*, list->buf, list->cap);
 	}
 
 	list->buf[list->size ++] = json;
@@ -250,8 +247,7 @@ static int jstream_print(jstream_t *this, const char *str) {
 				this->cap *= 2;
 			while (this->size + 1 >= this->cap);
 
-			this->buf = (char*)NOCH_REALLOC(this->buf, this->cap);
-			NOCH_CHECK_ALLOC(this->buf);
+			NOCH_MUST_REALLOC(char, this->buf, this->cap);
 		}
 
 		strcpy(this->buf + prev, str);
@@ -351,8 +347,7 @@ static int jstream_indent(jstream_t *this, size_t nest) {
 				this->cap *= 2;
 			while (this->size + 1 >= this->cap);
 
-			this->buf = (char*)NOCH_REALLOC(this->buf, this->cap);
-			NOCH_CHECK_ALLOC(this->buf);
+			NOCH_MUST_REALLOC(char, this->buf, this->cap);
 		}
 
 		memset(this->buf + prev, '\t', nest);
@@ -448,14 +443,13 @@ NOCH_DEF void json_fprint(json_t *json, FILE *file) {
 NOCH_DEF char *json_stringify(json_t *json) {
 	jstream_t stream = {0};
 	stream.cap = JSON_STRINGIFY_CHUNK_SIZE;
-	stream.buf = (char*)NOCH_ALLOC(stream.cap);
-	NOCH_CHECK_ALLOC(stream.buf);
+	NOCH_MUST_ALLOC(char, stream.buf, stream.cap);
 
 	return jstream_print_json(&stream, json, 0, false) == 0? stream.buf : NULL;
 }
 
 typedef enum {
-	JSON_TOK_EOI,
+	JSON_TOK_EOI = 0,
 
 	JSON_TOK_STR,
 	JSON_TOK_INT,
@@ -475,24 +469,57 @@ typedef enum {
 
 /* JSON parser structure */
 typedef struct {
-	const char *it, *bol; /* iterator, beginning of line */
+	const char *in, *it, *bol; /* input, iterator, beginning of line */
 	size_t      row;
 
 	json_tok_t tok;
 	size_t     tok_row, tok_col;
 
-	char  *data;
-	size_t data_cap, data_size;
+	char  *data, *data_copy;
+	size_t data_cap, data_size, data_copy_cap;
 
 	size_t err_row, err_col;
 } jparser_t;
 
-#define JPARSER_ERR(P, MSG, ROW, COL) \
-	((P)->err_row = ROW,              \
-	 (P)->err_col = COL,              \
-	 NOCH_PARSER_ERR(MSG))
+static void jparser_init(jparser_t *this, const char *in) {
+	this->in       = in;
+	this->it       = in;
+	this->bol      = this->it;
+	this->row      = 1;
+	this->data_cap = 64;
+	NOCH_MUST_ALLOC(char, this->data, this->data_cap);
+}
 
-#define JPARSER_COL(P) ((size_t)(P)->it - (size_t)(P)->bol + 1)
+static void jparser_deinit(jparser_t *this) {
+	NOCH_FREE(this->data);
+
+	if (this->data_copy != NULL)
+		NOCH_FREE(this->data_copy);
+}
+
+inline static int jparser_err(jparser_t *this, const char *msg, size_t row, size_t col) {
+	this->err_row = row;
+	this->err_col = col;
+	NOCH_PARSER_ERR(msg);
+	return -1;
+}
+
+inline static size_t jparser_col(jparser_t *this) {
+	return this->it - this->bol + 1;
+}
+
+static char *jparser_create_data_copy(jparser_t *this) {
+	if (this->data_copy == NULL) {
+		this->data_copy_cap = this->data_cap;
+		NOCH_MUST_ALLOC(char, this->data_copy, this->data_copy_cap);
+	} else if (this->data_copy_cap < this->data_cap) {
+		this->data_copy_cap = this->data_cap;
+		NOCH_MUST_REALLOC(char, this->data_copy, this->data_copy_cap);
+	}
+
+	strcpy(this->data_copy, this->data);
+	return this->data_copy;
+}
 
 static void jparser_data_clear(jparser_t *this) {
 	this->data[0]   = '\0';
@@ -502,8 +529,7 @@ static void jparser_data_clear(jparser_t *this) {
 static int jparser_data_add(jparser_t *this, char ch) {
 	if (this->data_size + 1 >= this->data_cap) {
 		this->data_cap *= 2;
-		this->data = (char*)NOCH_REALLOC(this->data, this->data_cap);
-		NOCH_CHECK_ALLOC(this->data);
+		NOCH_MUST_REALLOC(char, this->data, this->data_cap);
 	}
 
 	this->data[this->data_size ++] = ch;
@@ -515,7 +541,7 @@ static int jparser_data_add(jparser_t *this, char ch) {
 static int jparser_skip_cmnt(jparser_t *this) {
 	NOCH_ASSERT(*this->it == '/' && this->it[1] == '*');
 
-	size_t row = this->row, col = JPARSER_COL(this);
+	size_t row = this->row, col = jparser_col(this);
 
 	this->it += 2;
 	bool prev_asterisk = false;
@@ -526,7 +552,7 @@ static int jparser_skip_cmnt(jparser_t *this) {
 			++ this->row;
 			this->bol = this->it + 1;
 		} else if (*this->it == '\0')
-			return JPARSER_ERR(this, "Comment not terminated", row, col);
+			return jparser_err(this, "Comment not terminated", row, col);
 
 		++ this->it;
 	}
@@ -555,7 +581,7 @@ static int jparser_skip_ws_and_cmnts(jparser_t *this) {
 
 static void jparser_tok_start_here(jparser_t *this) {
 	this->tok_row = this->row;
-	this->tok_col = JPARSER_COL(this);
+	this->tok_col = jparser_col(this);
 }
 
 static int jparser_tok_single(jparser_t *this, json_tok_t tok) {
@@ -573,7 +599,7 @@ static int jparser_get_hex4(jparser_t *this, uint16_t *ret) {
 	char buf[5] = {0};
 	for (size_t i = 0; i < 4; ++ i) {
 		if (!isxdigit(*this->it))
-			return JPARSER_ERR(this, "Expected 4 hexadecimal digits", this->row, JPARSER_COL(this));
+			return jparser_err(this, "Expected 4 hexadecimal digits", this->row, jparser_col(this));
 
 		buf[i] = *this->it ++;
 	}
@@ -583,7 +609,7 @@ static int jparser_get_hex4(jparser_t *this, uint16_t *ret) {
 }
 
 static int jparser_unicode_seq(jparser_t *this) {
-	size_t col = JPARSER_COL(this) - 1;
+	size_t col = jparser_col(this) - 1;
 	++ this->it;
 
 	uint32_t rune;
@@ -594,17 +620,17 @@ static int jparser_unicode_seq(jparser_t *this) {
 	/* Surrogate pair */
 	if (first >= 0xD800 && first <= 0xDBFF) {
 		if (*this->it == '\0')
-			return JPARSER_ERR(this, "Expected a surrogate pair", this->tok_row, this->tok_col);
+			return jparser_err(this, "Expected a surrogate pair", this->tok_row, this->tok_col);
 
 		if (this->it[0] != '\\' || this->it[1] != 'u')
-			return JPARSER_ERR(this, "Invalid unicode sequence", this->row, col);
+			return jparser_err(this, "Invalid unicode sequence", this->row, col);
 
 		this->it += 2;
 		if (jparser_get_hex4(this, &second) != 0)
 			return -1;
 
 		if (second < 0xDC00 || second > 0xDFFF)
-			return JPARSER_ERR(this, "Invalid unicode sequence", this->row, col);
+			return jparser_err(this, "Invalid unicode sequence", this->row, col);
 
 		rune = 0x10000 + (((first & 0x3FF) << 10) | (second & 0x3FF));
 	} else
@@ -627,7 +653,7 @@ static int jparser_unicode_seq(jparser_t *this) {
 		out[2] = 0x80 | (rune >> 6  & 0x3F); /* 10xxxxxx */
 		out[3] = 0x80 | (rune & 0x3F);       /* 10xxxxxx */
 	} else
-		return JPARSER_ERR(this, "Invalid unicode sequence", this->row, col);
+		return jparser_err(this, "Invalid unicode sequence", this->row, col);
 
 	for (const char *it = out; *it != '\0'; ++ it) {
 		if (jparser_data_add(this, *it) != 0)
@@ -648,7 +674,7 @@ static int jparser_tok_str(jparser_t *this) {
 	bool escape = false;
 	while (escape || *this->it != '"') {
 		if (*this->it == '\0' || *this->it  == '\n')
-			return JPARSER_ERR(this, "String not terminated", this->tok_row, this->tok_col);
+			return jparser_err(this, "String not terminated", this->tok_row, this->tok_col);
 		else if (escape) {
 			escape = false;
 			char escaped;
@@ -670,8 +696,8 @@ static int jparser_tok_str(jparser_t *this) {
 					return -1;
 				continue;
 
-			default: return JPARSER_ERR(this, "Unknown escape sequence",
-			                            this->row, JPARSER_COL(this) - 1);
+			default: return jparser_err(this, "Unknown escape sequence",
+			                            this->row, jparser_col(this) - 1);
 			}
 
 			if (jparser_data_add(this, escaped) != 0)
@@ -703,14 +729,14 @@ static int jparser_tok_num(jparser_t *this) {
 			return -1;
 
 		if (!isdigit(*this->it))
-			return JPARSER_ERR(this, "Expected a number", this->row, JPARSER_COL(this));
+			return jparser_err(this, "Expected a number", this->row, jparser_col(this));
 	}
 
 	while (true) {
 		if (*this->it == 'e') {
 			if (exponent)
-				return JPARSER_ERR(this, "Encountered exponent in number twice",
-				                   this->row, JPARSER_COL(this));
+				return jparser_err(this, "Encountered exponent in number twice",
+				                   this->row, jparser_col(this));
 			else
 				exponent = true;
 
@@ -718,23 +744,23 @@ static int jparser_tok_num(jparser_t *this) {
 				++ this->it;
 
 			if (!isdigit(this->it[1]))
-				return JPARSER_ERR(this, "Expected a number", this->row, JPARSER_COL(this) + 1);
+				return jparser_err(this, "Expected a number", this->row, jparser_col(this) + 1);
 		} else if (*this->it == '.') {
 			if (exponent)
-				return JPARSER_ERR(this, "Unexpected floating point in exponent",
-				                   this->row, JPARSER_COL(this));
+				return jparser_err(this, "Unexpected floating point in exponent",
+				                   this->row, jparser_col(this));
 			else if (fpoint)
-				return JPARSER_ERR(this, "Encountered a floating point in number twice",
-				                   this->row, JPARSER_COL(this));
+				return jparser_err(this, "Encountered a floating point in number twice",
+				                   this->row, jparser_col(this));
 			else {
 				fpoint = true;
 
 				if (!isdigit(this->it[1]))
-					return JPARSER_ERR(this, "Expected a number", this->row, JPARSER_COL(this) + 1);
+					return jparser_err(this, "Expected a number", this->row, jparser_col(this) + 1);
 			}
 		} else if (*this->it == '-' || isalpha(*this->it))
-			return JPARSER_ERR(this, "Unexpected character in number",
-			                   this->row, JPARSER_COL(this));
+			return jparser_err(this, "Unexpected character in number",
+			                   this->row, jparser_col(this));
 		else if (!isdigit(*this->it))
 			break;
 
@@ -764,7 +790,7 @@ static int jparser_tok_id(jparser_t *this) {
 	else if (strcmp(this->data, "true") == 0 || strcmp(this->data, "false") == 0)
 		this->tok = JSON_TOK_BOOL;
 	else
-		return JPARSER_ERR(this, "Unknown identifier", this->tok_row, this->tok_col);
+		return jparser_err(this, "Unknown identifier", this->tok_row, this->tok_col);
 
 	return 0;
 }
@@ -775,7 +801,7 @@ static int jparser_advance(jparser_t *this) {
 	else if (*this->it == '\0') {
 		this->tok     = JSON_TOK_EOI;
 		this->tok_row = this->row;
-		this->tok_col = JPARSER_COL(this);
+		this->tok_col = jparser_col(this);
 		return 0;
 	}
 
@@ -794,11 +820,9 @@ static int jparser_advance(jparser_t *this) {
 		else if (isalpha(*this->it))
 			return jparser_tok_id(this);
 		else
-			return JPARSER_ERR(this, "Unexpected character", this->row, JPARSER_COL(this));
+			return jparser_err(this, "Unexpected character", this->row, jparser_col(this));
 	}
 }
-
-#undef JPARSER_COL
 
 /* TODO: Is there a better way possibly? */
 #define JPARSER_MUST_ADVANCE(P)      \
@@ -810,7 +834,7 @@ static int jparser_advance(jparser_t *this) {
 #define JPARSER_TOK_MUST_BE(P, TOK, MSG)                     \
 	do {                                                     \
 		if ((P)->tok != TOK) {                               \
-			JPARSER_ERR(P, MSG, (P)->tok_row, (P)->tok_col); \
+			jparser_err(P, MSG, (P)->tok_row, (P)->tok_col); \
 			goto fail;                                       \
 		}                                                    \
 	} while (0)
@@ -819,16 +843,28 @@ static json_t *jparser_parse(jparser_t *this);
 
 static json_obj_t *jparser_parse_obj(jparser_t *this) {
 	json_obj_t *obj = json_new_obj();
-	JPARSER_MUST_ADVANCE(this);
+	if (jparser_advance(this) != 0)
+		goto fail;
 
 	while (this->tok != JSON_TOK_RCURLY) {
-		JPARSER_TOK_MUST_BE(this, JSON_TOK_STR, "Expected a key string");
-		char *key = json_strdup(this->data);
+		if (this->tok != JSON_TOK_STR) {
+			jparser_err(this, "Expected a key string", this->tok_row, this->tok_col);
+			goto fail;
+		}
 
-		JPARSER_MUST_ADVANCE(this);
-		JPARSER_TOK_MUST_BE(this, JSON_TOK_COLON, "Expected a \":\"");
+		char *key = jparser_create_data_copy(this);
 
-		JPARSER_MUST_ADVANCE(this);
+		if (jparser_advance(this) != 0)
+			goto fail;
+
+		if (this->tok != JSON_TOK_COLON) {
+			jparser_err(this, "Expected a \":\"", this->tok_row, this->tok_col);
+			goto fail;
+		}
+
+		if (jparser_advance(this) != 0)
+			goto fail;
+
 		json_t *json = jparser_parse(this);
 		if (json == NULL)
 			goto fail;
@@ -838,13 +874,17 @@ static json_obj_t *jparser_parse_obj(jparser_t *this) {
 			goto fail;
 		}
 
-		NOCH_FREE(key);
+		if (jparser_advance(this) != 0)
+			goto fail;
 
-		JPARSER_MUST_ADVANCE(this);
-		if (this->tok == JSON_TOK_COMMA)
-			JPARSER_MUST_ADVANCE(this);
-		else
-			JPARSER_TOK_MUST_BE(this, JSON_TOK_RCURLY, "Expected a \"}\"");
+		if (this->tok == JSON_TOK_COMMA) {
+			if (jparser_advance(this) != 0) {
+				goto fail;
+			}
+		} else if (this->tok != JSON_TOK_RCURLY) {
+			jparser_err(this, "Expected a \"}\"", this->tok_row, this->tok_col);
+			goto fail;
+		}
 	}
 
 	return obj;
@@ -856,7 +896,8 @@ fail:
 
 static json_list_t *jparser_parse_list(jparser_t *this) {
 	json_list_t *list = json_new_list();
-	JPARSER_MUST_ADVANCE(this);
+	if (jparser_advance(this) != 0)
+		goto fail;
 
 	while (this->tok != JSON_TOK_RSQUARE) {
 		json_t *json = jparser_parse(this);
@@ -868,11 +909,16 @@ static json_list_t *jparser_parse_list(jparser_t *this) {
 			goto fail;
 		}
 
-		JPARSER_MUST_ADVANCE(this);
-		if (this->tok == JSON_TOK_COMMA)
-			JPARSER_MUST_ADVANCE(this);
-		else
-			JPARSER_TOK_MUST_BE(this, JSON_TOK_RSQUARE, "Expected a \"]\"");
+		if (jparser_advance(this) != 0)
+			goto fail;
+
+		if (this->tok == JSON_TOK_COMMA) {
+			if (jparser_advance(this) != 0)
+				goto fail;
+		} else if (this->tok != JSON_TOK_RSQUARE) {
+			jparser_err(this, "Expected a \"]\"", this->tok_row, this->tok_col);
+			goto fail;
+		}
 	}
 
 	return list;
@@ -882,13 +928,25 @@ fail:
 	return NULL;
 }
 
-#undef JPARSER_TOK_MUST_BE
-#undef JPARSER_MUST_ADVANCE
+static int jparser_expect_input_end(jparser_t *this) {
+	if (jparser_advance(this) != 0)
+		return -1;
+
+	if (this->tok != JSON_TOK_EOI)
+		return jparser_err(this, "Unexpected token after data end", this->tok_row, this->tok_col);
+
+	return 0;
+}
 
 static json_t *jparser_parse(jparser_t *this) {
+	if (this->it == this->in) {
+		if (jparser_advance(this) != 0)
+			return NULL;
+	}
+
 	switch (this->tok) {
 	case JSON_TOK_EOI:
-		JPARSER_ERR(this, "Unexpected end of file", this->tok_row, this->tok_col);
+		jparser_err(this, "Unexpected end of input", this->tok_row, this->tok_col);
 		break;
 
 	case JSON_TOK_STR:   return (json_t*)json_new_str(this->data);
@@ -900,48 +958,34 @@ static json_t *jparser_parse(jparser_t *this) {
 	case JSON_TOK_LCURLY:  return (json_t*)jparser_parse_obj(this);
 	case JSON_TOK_LSQUARE: return (json_t*)jparser_parse_list(this);
 
-	default: JPARSER_ERR(this, "Unexpected token", this->tok_row, this->tok_col);
+	default: jparser_err(this, "Unexpected token", this->tok_row, this->tok_col);
 	}
 
 	return NULL;
 }
 
-#undef JPARSER_ERR
-
-#define JSON_SET_WHERE(ROW_PTR, ROW, COL_PTR, COL) \
-	do {                                           \
-		if (ROW_PTR != NULL)                       \
-			*ROW_PTR = ROW;                        \
-		if (COL_PTR != NULL)                       \
-			*COL_PTR = COL;                        \
-	} while (0)
-
 NOCH_DEF json_t *json_from_file(const char *path, size_t *row, size_t *col) {
 	NOCH_ASSERT(path != NULL);
 
+	if (row != NULL) *row = 0;
+	if (col != NULL) *col = 0;
+
 	FILE *file = fopen(path, "r");
-	if (file == NULL) {
-		NOCH_FOPEN_FAIL();
-		return NULL;
-	}
+	if (file == NULL)
+		return NOCH_NULL(NOCH_FOPEN_FAIL());
 
 	fseek(file, 0, SEEK_END);
 	size_t size = (size_t)ftell(file);
 	rewind(file);
 
-	if (size == 0) {
-		JSON_SET_WHERE(row, 0, col, 0);
-		NOCH_PARSER_ERR("File is empty");
-		return NULL;
-	}
+	if (size == 0)
+		return NOCH_NULL(NOCH_PARSER_ERR("File is empty"));
 
-	char *in = (char*)NOCH_ALLOC(size + 1);
-	NOCH_CHECK_ALLOC(in);
+	char *in;
+	NOCH_MUST_ALLOC(char, in, size + 1);
 
-	if (fread(in, size, 1, file) <= 0) {
-		NOCH_FREAD_FAIL();
-		return NULL;
-	}
+	if (fread(in, size, 1, file) <= 0)
+		return NOCH_NULL(NOCH_FREAD_FAIL());
 
 	in[size] = '\0';
 	fclose(file);
@@ -954,45 +998,20 @@ NOCH_DEF json_t *json_from_file(const char *path, size_t *row, size_t *col) {
 NOCH_DEF json_t *json_from_mem(const char *in, size_t *row, size_t *col) {
 	NOCH_ASSERT(in != NULL);
 
-#define JPARSER_TOK_CAP 64
+	jparser_t parser_ = {0}, *parser = &parser_;
+	jparser_init(parser, in);
 
-	jparser_t parser = {0};
-	parser.it  = in;
-	parser.bol = parser.it;
-	parser.row = 1;
-
-	parser.data_cap = JPARSER_TOK_CAP;
-	parser.data     = (char*)NOCH_ALLOC(parser.data_cap);
-	NOCH_CHECK_ALLOC(parser.data);
-
-#undef JPARSER_TOK_CAP
-
-	if (jparser_advance(&parser) != 0) {
-		NOCH_FREE(parser.data);
-		JSON_SET_WHERE(row, parser.err_row, col, parser.err_col);
-		return NULL;
-	}
-
-	json_t *json = jparser_parse(&parser);
+	json_t *json = jparser_parse(parser);
 	if (json != NULL) {
-		if (jparser_advance(&parser) != 0) {
+		if (jparser_expect_input_end(parser) != 0) {
 			json_destroy(json);
-			NOCH_FREE(parser.data);
-			JSON_SET_WHERE(row, parser.err_row, col, parser.err_col);
-			return NULL;
-		}
-
-		if (parser.tok != JSON_TOK_EOI) {
-			json_destroy(json);
-			NOCH_FREE(parser.data);
-			JSON_SET_WHERE(row, parser.tok_row, col, parser.tok_col);
-			NOCH_PARSER_ERR("Unexpected token after data");
-			return NULL;
+			json = NULL;
 		}
 	}
 
-	NOCH_FREE(parser.data);
-	JSON_SET_WHERE(row, parser.err_row, col, parser.err_col);
+	jparser_deinit(parser);
+	if (row != NULL) *row = parser->err_row;
+	if (col != NULL) *col = parser->err_col;
 	return json;
 }
 

@@ -21,7 +21,8 @@ NOCH_DEF void hmap_init(hmap_t *this, size_t cap, size_t valsz,
 	this->hash  = hash;
 	this->free  = free;
 	this->buf   = NOCH_ALLOC(this->cap * HMAPE_SIZE(this));
-	NOCH_CHECK_ALLOC(this->buf);
+	if (this->buf == NULL)
+		NOCH_ALLOC_FAIL();
 
 	memset(this->buf, 0, this->cap * HMAPE_SIZE(this));
 }
@@ -108,7 +109,8 @@ NOCH_DEF void hmap_set(hmap_t *this, const char *key, void *val) {
 
 			this->cap *= 2;
 			this->buf  = NOCH_ALLOC(this->cap * HMAPE_SIZE(this));
-			NOCH_CHECK_ALLOC(this->buf);
+			if (this->buf == NULL)
+				NOCH_ALLOC_FAIL();
 
 			memset(this->buf, 0, this->cap * HMAPE_SIZE(this));
 

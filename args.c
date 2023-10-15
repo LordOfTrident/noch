@@ -273,8 +273,7 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 	/* If stripped args are expected to be returned, allocate memory for them
 	   (allocate the same size as the original arguments so we dont have to do any reallocs) */
 	if (stripped != NULL) {
-		stripped->base = (char**)NOCH_ALLOC(sizeof(*stripped->v) * (args->c + 1));
-		NOCH_CHECK_ALLOC(stripped->base);
+		NOCH_MUST_ALLOC(char*, stripped->base, args->c + 1);
 
 		stripped->v = (const char**)stripped->base;
 		stripped->c = 0;

@@ -21,12 +21,7 @@ const char *noch_err_msg = "Ok";
 #define NOCH_FOPEN_FAIL()    noch_set_err(NOCH_ERR_FOPEN,      NULL)
 #define NOCH_FREAD_FAIL()    noch_set_err(NOCH_ERR_FREAD,      NULL)
 #define NOCH_PARSER_ERR(MSG) noch_set_err(NOCH_ERR_PARSER,     MSG)
-
-#define NOCH_CHECK_ALLOC(PTR)                  \
-	do {                                       \
-		if (PTR == NULL)                       \
-			NOCH_ASSERT(0 && "Out of memory"); \
-	} while (0)
+#define NOCH_NULL(...)       (__VA_ARGS__, NULL)
 
 int noch_set_err(noch_err_t err, const char *msg) {
 	NOCH_ASSERT(err < NOCH_ERRS_COUNT && err >= 0);

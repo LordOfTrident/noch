@@ -11,8 +11,8 @@ extern "C" {
 NOCH_DEF char *xstrdup(const char *str) {
 	NOCH_ASSERT(str != NULL);
 
-	char *ptr = (char*)NOCH_ALLOC(strlen(str) + 1);
-	NOCH_CHECK_ALLOC(ptr);
+	char *ptr;
+	NOCH_MUST_ALLOC(char, ptr, strlen(str) + 1);
 
 	strcpy(ptr, str);
 	return ptr;
