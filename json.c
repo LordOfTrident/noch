@@ -37,7 +37,6 @@ extern "C" {
 #define jparser_parse_list        NOCH_PRIVATE(jparser_parse_list)
 #define jparser_err               NOCH_PRIVATE(jparser_err)
 #define jparser_col               NOCH_PRIVATE(jparser_col)
-#define jparser_create_data_copy  NOCH_PRIVATE(jparser_create_data_copy)
 #define jparser_init              NOCH_PRIVATE(jparser_init)
 #define jparser_deinit            NOCH_PRIVATE(jparser_deinit)
 #define jparser_expect_input_end  NOCH_PRIVATE(jparser_expect_input_end)
@@ -475,8 +474,8 @@ typedef struct {
 	json_tok_t tok;
 	size_t     tok_row, tok_col;
 
-	char  *data, *data_copy;
-	size_t data_cap, data_size, data_copy_cap;
+	char  *data;
+	size_t data_cap, data_size;
 
 	size_t err_row, err_col;
 } jparser_t;
@@ -492,9 +491,6 @@ static void jparser_init(jparser_t *this, const char *in) {
 
 static void jparser_deinit(jparser_t *this) {
 	NOCH_FREE(this->data);
-
-	if (this->data_copy != NULL)
-		NOCH_FREE(this->data_copy);
 }
 
 inline static int jparser_err(jparser_t *this, const char *msg, size_t row, size_t col) {
@@ -506,19 +502,6 @@ inline static int jparser_err(jparser_t *this, const char *msg, size_t row, size
 
 inline static size_t jparser_col(jparser_t *this) {
 	return this->it - this->bol + 1;
-}
-
-static char *jparser_create_data_copy(jparser_t *this) {
-	if (this->data_copy == NULL) {
-		this->data_copy_cap = this->data_cap;
-		NOCH_MUST_ALLOC(char, this->data_copy, this->data_copy_cap);
-	} else if (this->data_copy_cap < this->data_cap) {
-		this->data_copy_cap = this->data_cap;
-		NOCH_MUST_REALLOC(char, this->data_copy, this->data_copy_cap);
-	}
-
-	strcpy(this->data_copy, this->data);
-	return this->data_copy;
 }
 
 static void jparser_data_clear(jparser_t *this) {
@@ -842,6 +825,7 @@ static int jparser_advance(jparser_t *this) {
 static json_t *jparser_parse(jparser_t *this);
 
 static json_obj_t *jparser_parse_obj(jparser_t *this) {
+	char       *key = NULL;
 	json_obj_t *obj = json_new_obj();
 	if (jparser_advance(this) != 0)
 		goto fail;
@@ -852,7 +836,7 @@ static json_obj_t *jparser_parse_obj(jparser_t *this) {
 			goto fail;
 		}
 
-		char *key = jparser_create_data_copy(this);
+		key = json_strdup(this->data);
 
 		if (jparser_advance(this) != 0)
 			goto fail;
@@ -874,6 +858,9 @@ static json_obj_t *jparser_parse_obj(jparser_t *this) {
 			goto fail;
 		}
 
+		NOCH_FREE(key);
+		key = NULL;
+
 		if (jparser_advance(this) != 0)
 			goto fail;
 
@@ -890,6 +877,9 @@ static json_obj_t *jparser_parse_obj(jparser_t *this) {
 	return obj;
 
 fail:
+	if (key != NULL)
+		NOCH_FREE(key);
+
 	json_destroy((json_t*)obj);
 	return NULL;
 }
