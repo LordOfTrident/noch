@@ -1,6 +1,6 @@
 CFLAGS = -O2 -std=c99 -Wall -Wextra -Werror -pedantic -Wno-deprecated-declarations -g -I./
 
-examples: utf8 json args colorer log common sv hmap
+examples: utf8 json args colorer log common sv hmap mexpr
 
 bin:
 	mkdir -p bin
@@ -32,8 +32,11 @@ sv: bin
 hmap: bin
 	$(CC) examples/hmap/hmap.c $(CFLAGS) -o bin/hmap
 
+mexpr: bin
+	$(CC) examples/mexpr/mexpr.c $(CFLAGS) -o bin/mexpr -lm
+
 clean: bin
 	rm bin/*
 
 all:
-	@echo examples, utf8, json, args, colorer, log, common, sv, hmap, clean
+	@echo examples, utf8, json, args, colorer, log, common, sv, hmap, mexpr, clean
