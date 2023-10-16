@@ -111,7 +111,7 @@
 		"type": "task",
 		"title": "`mexpr`    - Math expression parser/evaluator",
 		"desc": null,
-		"done": false
+		"done": true
 	},
 	{
 		"type": "task",

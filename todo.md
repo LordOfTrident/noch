@@ -1,4 +1,4 @@
-# TODO (60% done)
+# TODO (65% done)
 - [X] `common`   - Common C functionalities
 - [X] `args`     - Command line arguments/flags parser
 - [X] `attrs`    - C attribute macros
@@ -17,5 +17,5 @@
 - [ ] `builder`  - C project builder
 - [ ] `bytes`    - Byte manipulation functions
 - [ ] `region`   - Region allocator
-- [ ] `mexpr`    - Math expression parser/evaluator
+- [X] `mexpr`    - Math expression parser/evaluator
 - [ ] `ini`      - INI parser
