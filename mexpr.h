@@ -16,7 +16,7 @@ extern "C" {
 
 #include "internal/def.h"
 
-/* TODO: Function and variable definition parsing */
+/* TODO: Function and variable definition parsing (they will be statements of type mstmt_t*) */
 
 typedef enum {
 	MEXPR_NUM = 0,
@@ -82,10 +82,10 @@ typedef struct {
 	size_t     fns_count, fns_cap;
 } mctx_t;
 
-NOCH_DEF void mctx_init  (mctx_t *this);
-NOCH_DEF void mctx_deinit(mctx_t *this);
+NOCH_DEF void mctx_init  (mctx_t *this); /* TODO */
+NOCH_DEF void mctx_deinit(mctx_t *this); /* TODO */
 
-NOCH_DEF void mctx_add_fn(mctx_t *this, const char *name, mctx_native_t fn);
+NOCH_DEF void mctx_add_fn(mctx_t *this, const char *name, mctx_native_t fn); /* TODO */
 
 NOCH_DEF mexpr_t *mexpr_parse(const char *in, size_t *row, size_t *col);
 NOCH_DEF double   mexpr_eval   (mexpr_t *this, mctx_t *ctx);
