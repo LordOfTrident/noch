@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "../../hmap.h"
-#include "../../hmap.c"
+#include <noch/hmap.h>
+#include <noch/hmap.c>
 
 void print_val(hmap_cstr_t *hmap, const char *key) {
 	const char **ref = HMAP_GET(hmap, key);

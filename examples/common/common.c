@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "../../common.h"
-#include "../../common.c"
+#include <noch/common.h>
+#include <noch/common.c>
 
 int main(int argc, char **argv) {
 	UNUSED(argc); UNUSED(argv);

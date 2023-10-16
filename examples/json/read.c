@@ -1,8 +1,8 @@
 #include <stdio.h>  /* fprintf, printf */
 #include <stdlib.h> /* EXIT_FAILURE */
 
-#include "../../json.h"
-#include "../../json.c"
+#include <noch/json.h>
+#include <noch/json.c>
 
 int main(void) {
 	const char *path = "examples/json/data.json";

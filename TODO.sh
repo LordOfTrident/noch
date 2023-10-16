@@ -1,3 +1,3 @@
 #!/bin/sh
 
-grep -r TODO ./*.c ./*.h
+grep -r TODO ./noch

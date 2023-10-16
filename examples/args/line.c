@@ -3,8 +3,8 @@
 #include <string.h> /* strcmp */
 #include <assert.h> /* assert */
 
-#include "../../args.h" /* Declarations */
-#include "../../args.c" /* Implementation */
+#include <noch/args.h> /* Declarations */
+#include <noch/args.c> /* Implementation */
 
 #define DESC "Draw a line in the terminal"
 const char *usages[] = {

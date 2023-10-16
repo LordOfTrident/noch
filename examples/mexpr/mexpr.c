@@ -1,8 +1,8 @@
 #include <stdio.h>  /* fprintf, printf */
 #include <stdlib.h> /* EXIT_FAILURE */
 
-#include "../../mexpr.h"
-#include "../../mexpr.c"
+#include <noch/mexpr.h>
+#include <noch/mexpr.c>
 
 int main(void) {
 	const char *in = "5(10 / [1 * (1 + 1)]) - 2^4 * 2";

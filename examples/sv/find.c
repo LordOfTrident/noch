@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "../../sv.h"
-#include "../../sv.c"
+#include <noch/sv.h>
+#include <noch/sv.c>
 
 void a(void) {
 	sv_t sv     = sv_cstr("Hello, world!");

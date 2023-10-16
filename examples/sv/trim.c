@@ -1,7 +1,7 @@
 #include <stdio.h> /* printf */
 
-#include "../../sv.h"
-#include "../../sv.c"
+#include <noch/sv.h>
+#include <noch/sv.c>
 
 int main(void) {
 	sv_t sv = sv_cstr("\r \t   Hello, world!\t    ");

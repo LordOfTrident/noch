@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "../../colorer.h"
-#include "../../colorer.c"
+#include <noch/colorer.h>
+#include <noch/colorer.c>
 
 int main(void) {
 	init_color();

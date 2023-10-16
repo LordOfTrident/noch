@@ -1,5 +1,5 @@
-#include "../../json.h"
-#include "../../json.c"
+#include <noch/json.h>
+#include <noch/json.c>
 
 int main(void) {
 	json_obj_t *json = json_new_obj();

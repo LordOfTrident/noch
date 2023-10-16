@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "../../log.h"
-#include "../../log.c"
+#include <noch/log.h>
+#include <noch/log.c>
 
 int main(void) {
 	set_log_file(stdout);

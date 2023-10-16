@@ -2,8 +2,8 @@
 #include <string.h> /* memcpy */
 #include <stdlib.h> /* malloc, free */
 
-#include "../../utf8.h"
-#include "../../utf8.c"
+#include <noch/utf8.h>
+#include <noch/utf8.c>
 
 void print_res(const char *str, const char *find, const char *res, size_t idx) {
 	printf("Find '%s' in '%s'\n", find, str);

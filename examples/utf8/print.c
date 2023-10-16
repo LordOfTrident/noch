@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#include "../../utf8.h"
-#include "../../utf8.c"
+#include <noch/utf8.h>
+#include <noch/utf8.c>
 
 int main(void) {
 	const char *str = "hello π \uE0B3 lol";
