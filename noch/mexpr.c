@@ -32,6 +32,7 @@ extern "C" {
 #define mparser_parse_factor     NOCH_PRIVATE(mparser_parse_factor)
 #define mparser_parse_unary      NOCH_PRIVATE(mparser_parse_unary)
 #define mparser_parse_paren      NOCH_PRIVATE(mparser_parse_paren)
+#define mparser_parse_pipe       NOCH_PRIVATE(mparser_parse_pipe)
 #define mparser_parse_id         NOCH_PRIVATE(mparser_parse_id)
 #define mparser_parse_num        NOCH_PRIVATE(mparser_parse_num)
 #define mparser_expect_input_end NOCH_PRIVATE(mparser_expect_input_end)
@@ -126,7 +127,7 @@ NOCH_DEF void mexpr_destroy(mexpr_t *this) {
 
 	case MEXPR_FN: {
 		mexpr_fn_t *fn = (mexpr_fn_t*)this;
-		for (size_t i = 0; i < fn->args_count; ++ i)
+		for (size_t i = 0; i < fn->argc; ++ i)
 			mexpr_destroy(fn->args[i]);
 	} break;
 
@@ -141,6 +142,8 @@ typedef enum {
 
 	MEXPR_TOK_NUM,
 	MEXPR_TOK_ID,
+
+	MEXPR_TOK_PIPE,
 
 	MEXPR_TOK_LPAREN,
 	MEXPR_TOK_RPAREN,
@@ -322,6 +325,7 @@ static int mparser_advance(mparser_t *this) {
 	}
 
 	switch (*this->it) {
+	case '|': return mparser_tok_single(this, MEXPR_TOK_PIPE);
 	case '(': return mparser_tok_single(this, MEXPR_TOK_LPAREN);
 	case ')': return mparser_tok_single(this, MEXPR_TOK_RPAREN);
 	case '[': return mparser_tok_single(this, MEXPR_TOK_LSQUARE);
@@ -346,18 +350,44 @@ static int mparser_advance(mparser_t *this) {
 
 static char mexpr_tok_to_op(mexpr_tok_t tok) {
 	switch (tok) {
-	case MEXPR_TOK_ADD: return '+';
-	case MEXPR_TOK_SUB: return '-';
-	case MEXPR_TOK_MUL: return '*';
-	case MEXPR_TOK_DIV: return '/';
-	case MEXPR_TOK_MOD: return '%';
-	case MEXPR_TOK_POW: return '^';
+	case MEXPR_TOK_ADD:  return '+';
+	case MEXPR_TOK_SUB:  return '-';
+	case MEXPR_TOK_MUL:  return '*';
+	case MEXPR_TOK_DIV:  return '/';
+	case MEXPR_TOK_MOD:  return '%';
+	case MEXPR_TOK_POW:  return '^';
+	case MEXPR_TOK_PIPE: return '|';
 
 	default: NOCH_ASSERT(0 && "Token not an operator");
 	}
 }
+
 static mexpr_t *mparser_parse_factor(mparser_t *this);
 static mexpr_t *mparser_parse_arith (mparser_t *this);
+
+static mexpr_t *mparser_parse_pipe(mparser_t *this) {
+	char op = mexpr_tok_to_op(this->tok);
+
+	if (mparser_advance(this) != 0)
+		return NULL;
+
+	mexpr_t *expr = mparser_parse_arith(this);
+	if (expr == NULL)
+		return NULL;
+
+	if (this->tok != MEXPR_TOK_PIPE) {
+		mexpr_destroy(expr);
+		mparser_err(this, "Expected a matching \"|\"", this->row, mparser_col(this));
+		return NULL;
+	}
+
+	if (mparser_advance(this) != 0) {
+		mexpr_destroy(expr);
+		return NULL;
+	}
+
+	return (mexpr_t*)mexpr_new_unary(op, expr);
+}
 
 static mexpr_t *mparser_parse_paren(mparser_t *this) {
 	mexpr_tok_t end = this->tok + 1;
@@ -371,7 +401,6 @@ static mexpr_t *mparser_parse_paren(mparser_t *this) {
 
 	if (this->tok != end) {
 		mexpr_destroy(expr);
-
 		const char *msg = end == MEXPR_TOK_LPAREN?
 		                  "Expected a matching \")\"" : "Expected a matching \"]\"";
 		mparser_err(this, msg, this->row, mparser_col(this));
@@ -424,14 +453,14 @@ static mexpr_t *mparser_parse_id(mparser_t *this) {
 		NOCH_FREE(name);
 
 		while (true) {
-			if (fn->args_count >= MEXPR_MAX_ARGS) {
+			if (fn->argc >= MEXPR_MAX_ARGS) {
 				mparser_err(this, "Exceeded maximum amount of " MEXPR_STR(MEXPR_MAX_ARGS)
 				            " function arguments", this->row, mparser_col(this));
 				return NULL;
 			}
 
 			mexpr_t *expr = mparser_parse_arith(this);
-			fn->args[fn->args_count ++] = expr;
+			fn->args[fn->argc ++] = expr;
 			if (expr == NULL) {
 				mexpr_destroy((mexpr_t*)fn);
 				return NULL;
@@ -470,8 +499,9 @@ static mexpr_t *mparser_parse_factor(mparser_t *this) {
 		mparser_err(this, "Unexpected end of input", this->tok_row, this->tok_col);
 		break;
 
-	case MEXPR_TOK_NUM: return mparser_parse_num(this);
-	case MEXPR_TOK_ID:  return mparser_parse_id(this);
+	case MEXPR_TOK_NUM:  return mparser_parse_num(this);
+	case MEXPR_TOK_ID:   return mparser_parse_id(this);
+	case MEXPR_TOK_PIPE: return mparser_parse_pipe(this);
 
 	case MEXPR_TOK_ADD:    case MEXPR_TOK_SUB:     return mparser_parse_unary(this);
 	case MEXPR_TOK_LPAREN: case MEXPR_TOK_LSQUARE: return mparser_parse_paren(this);
@@ -593,49 +623,115 @@ NOCH_DEF mexpr_t *mexpr_parse(const char *in, size_t *row, size_t *col) {
 	return expr;
 }
 
-#define MEXPR_NAN (0.0 / 0.0)
+static mctx_result_t mexpr_div(double a, double b) {
+	if (b == 0)
+		return mctx_err("0", "Division by zero");
 
-static double mexpr_mod(double a, double b) {
-	float remainder = a / b;
-	return b * (remainder - floor(remainder));
+	return mctx_ok(a / b);
 }
 
-NOCH_DEF double mexpr_eval(mexpr_t *this, mctx_t *ctx) {
-	switch (this->type) {
-	case MEXPR_NUM: return ((mexpr_num_t*)this)->val;
+static mctx_result_t mexpr_mod(double a, double b) {
+	if (b == 0)
+		return mctx_err("0", "Division by zero");
+
+	float remainder = a / b;
+	return mctx_ok(b * (remainder - floor(remainder)));
+}
+
+NOCH_DEF mctx_result_t mctx_ok(double val) {
+	mctx_result_t result = {0};
+	result.val = val;
+	return result;
+}
+
+NOCH_DEF mctx_result_t mctx_err(const char *origin, const char *err) {
+	mctx_result_t result = {0};
+	result.origin = origin;
+	result.err    = err;
+	return result;
+}
+
+#define MCTX_MUST_EVAL(THIS, EXPR, TO)                 \
+	do {                                               \
+		mctx_result_t _result = mctx_eval(THIS, EXPR); \
+		if (_result.err != NULL)                       \
+			return _result;                            \
+		TO = _result.val;                              \
+	} while (0)
+
+NOCH_DEF mctx_result_t mctx_eval(mctx_t *this, mexpr_t *expr) {
+	switch (expr->type) {
+	case MEXPR_NUM: return mctx_ok(((mexpr_num_t*)expr)->val);
 
 	case MEXPR_UNARY: {
-		mexpr_unary_t *un = (mexpr_unary_t*)this;
-		double num = mexpr_eval(un->expr, ctx);
+		mexpr_unary_t *un = (mexpr_unary_t*)expr;
+		double num;
+		MCTX_MUST_EVAL(this, un->expr, num);
 
-		return un->op == '-'? -num : num;
+		switch (un->op) {
+		case '+': return mctx_ok(num);
+		case '-': return mctx_ok(-num);
+		case '|': return mctx_ok(fabs(num));
+
+		default: NOCH_ASSERT(0 && "Unknown unary operator");
+		}
 	}
 
 	case MEXPR_BINARY: {
-		mexpr_binary_t *bin = (mexpr_binary_t*)this;
-		double a = mexpr_eval(bin->a, ctx);
-		double b = mexpr_eval(bin->b, ctx);
+		mexpr_binary_t *bin = (mexpr_binary_t*)expr;
+		double a, b;
+		MCTX_MUST_EVAL(this, bin->a, a);
+		MCTX_MUST_EVAL(this, bin->b, b);
 
 		switch (bin->op) {
-		case '+': return a + b;
-		case '-': return a - b;
-		case '*': return a * b;
-		case '/': return a / b;
+		case '+': return mctx_ok(a + b);
+		case '-': return mctx_ok(a - b);
+		case '*': return mctx_ok(a * b);
+		case '/': return mexpr_div(a, b);
 		case '%': return mexpr_mod(a, b);
-		case '^': return pow(a, b);
+		case '^': return mctx_ok(pow(a, b));
 
 		default: NOCH_ASSERT(0 && "Unknown binary operator");
 		}
 	} break;
 
-	case MEXPR_ID: NOCH_ASSERT(0 && "TODO");
-	case MEXPR_FN: NOCH_ASSERT(0 && "TODO");
+	case MEXPR_ID: {
+		mexpr_id_t *id = (mexpr_id_t*)expr;
+
+		/* TODO: Maybe a hash map? */
+		for (size_t i = 0; i < this->consts_count; ++ i) {
+			if (strcmp(this->consts[i].name, id->val) == 0)
+				return mctx_ok(this->consts[i].val);
+		}
+
+		return mctx_err(id->val, "Undefined identifier");
+	}
+
+
+	case MEXPR_FN: {
+		mexpr_fn_t *fn = (mexpr_fn_t*)expr;
+		for (size_t i = 0; i < this->fns_count; ++ i) {
+			if (strcmp(this->fns[i].name, fn->name) == 0) {
+				double args[MEXPR_MAX_ARGS];
+				for (size_t i = 0; i < fn->argc; ++ i)
+					MCTX_MUST_EVAL(this, fn->args[i], args[i]);
+
+				mctx_result_t result = this->fns[i].fn(args, fn->argc);
+				if (result.origin == NULL)
+					result.origin = fn->name;
+
+				return result;
+			}
+		}
+
+		return mctx_err(fn->name, "Undefined function");
+	}
 
 	default: NOCH_ASSERT(0 && "Unknown expression type");
 	}
 }
 
-#undef MEXPR_NAN
+#undef MCTX_MUST_EVAL
 
 static void mexpr_fprint_float(double num, FILE *file) {
 	char buf[256];
@@ -681,9 +777,16 @@ NOCH_DEF void mexpr_fprint(mexpr_t *this, FILE *file) {
 
 	case MEXPR_UNARY: {
 		mexpr_unary_t *un = (mexpr_unary_t*)this;
-		fprintf(file, "(%c", un->op);
-		mexpr_fprint(un->expr, file);
-		fprintf(file, ")");
+
+		if (un->op == '|') {
+			fprintf(file, "|");
+			mexpr_fprint(un->expr, file);
+			fprintf(file, "|");
+		} else {
+			fprintf(file, "(%c", un->op);
+			mexpr_fprint(un->expr, file);
+			fprintf(file, ")");
+		}
 	} break;
 
 	case MEXPR_BINARY: {
@@ -698,7 +801,7 @@ NOCH_DEF void mexpr_fprint(mexpr_t *this, FILE *file) {
 	case MEXPR_FN: {
 		mexpr_fn_t *fn = (mexpr_fn_t*)this;
 		fprintf(file, "%s(", fn->name);
-		for (size_t i = 0; i < fn->args_count; ++ i) {
+		for (size_t i = 0; i < fn->argc; ++ i) {
 			if (i > 0)
 				fprintf(file, ", ");
 
@@ -713,6 +816,89 @@ NOCH_DEF void mexpr_fprint(mexpr_t *this, FILE *file) {
 
 #undef MEXPR_STR
 #undef __MEXPR_STR
+
+NOCH_DEF void mctx_init(mctx_t *this) {
+	memset(this, 0, sizeof(*this));
+
+	this->fns_cap = MCTX_FNS_CHUNK_SIZE;
+	NOCH_MUST_ALLOC(mctx_fn_t, this->fns, this->fns_cap);
+
+	this->consts_cap = MCTX_CONSTS_CHUNK_SIZE;
+	NOCH_MUST_ALLOC(mctx_const_t, this->consts, this->consts_cap);
+}
+
+NOCH_DEF void mctx_deinit(mctx_t *this) {
+	NOCH_FREE(this->fns);
+	NOCH_FREE(this->consts);
+}
+
+NOCH_DEF void mctx_register_fn(mctx_t *this, const char *name, mctx_native_t fn) {
+	if (this->fns_count >= this->fns_cap) {
+		this->fns_cap *= 2;
+		NOCH_MUST_REALLOC(mctx_fn_t, this->fns, this->fns_cap);
+	}
+
+	this->fns[this->fns_count].name  = name;
+	this->fns[this->fns_count ++].fn = fn;
+}
+
+NOCH_DEF void mctx_register_const(mctx_t *this, const char *name, double val) {
+	if (this->consts_count >= this->consts_cap) {
+		this->consts_cap *= 2;
+		NOCH_MUST_REALLOC(mctx_const_t, this->consts, this->consts_cap);
+	}
+
+	this->consts[this->consts_count].name   = name;
+	this->consts[this->consts_count ++].val = val;
+}
+
+#define BIND_MCTX_NATIVE(NAME, CFN, ARGC, ...)               \
+	NOCH_DEF mctx_result_t NAME(double *args, size_t argc) { \
+		if (argc != ARGC)                                    \
+			return MCTX_INVALID_AMOUNT_OF_ARGS;              \
+		return mctx_ok(CFN(__VA_ARGS__));                    \
+	}
+
+BIND_MCTX_NATIVE(mctx_fn_sqrt,  sqrt,  1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_cbrt,  cbrt,  1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_hypot, hypot, 2, args[0], args[1])
+BIND_MCTX_NATIVE(mctx_fn_sin,   sin,   1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_cos,   cos,   1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_tan,   tan,   1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_log,   log,   1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_floor, floor, 1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_ceil,  ceil,  1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_round, round, 1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_atan,  atan,  1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_atan2, atan2, 2, args[0], args[1])
+
+NOCH_DEF mctx_result_t mctx_fn_root(double *args, size_t argc) {
+	if (argc != 2)
+		return MCTX_INVALID_AMOUNT_OF_ARGS;
+
+	if (args[1] == 0)
+		return MCTX_DIV_BY_ZERO;
+
+	return mctx_ok(pow(args[0], 1 / args[1]));
+}
+
+#undef BIND_MCTX_NATIVE
+
+NOCH_DEF void mctx_register_basic_fns(mctx_t *this) {
+	mctx_register_fn(this, "sqrt",  mctx_fn_sqrt);
+	mctx_register_fn(this, "cbrt",  mctx_fn_cbrt);
+	mctx_register_fn(this, "hypot", mctx_fn_hypot);
+	mctx_register_fn(this, "sin",   mctx_fn_sin);
+	mctx_register_fn(this, "cos",   mctx_fn_cos);
+	mctx_register_fn(this, "tan",   mctx_fn_tan);
+	mctx_register_fn(this, "log",   mctx_fn_log);
+	mctx_register_fn(this, "floor", mctx_fn_floor);
+	mctx_register_fn(this, "ceil",  mctx_fn_ceil);
+	mctx_register_fn(this, "round", mctx_fn_round);
+	mctx_register_fn(this, "root",  mctx_fn_root);
+	mctx_register_fn(this, "atan",  mctx_fn_atan);
+	mctx_register_fn(this, "atan2", mctx_fn_atan2);
+}
 
 #undef mexpr_strdup
 #undef mexpr_new_num

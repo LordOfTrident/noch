@@ -9,7 +9,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>  /* fprintf, FILE */
-#include <string.h> /* memset, strlen, strcpy */
+#include <string.h> /* strcmp, memset, strlen, strcpy */
 #include <ctype.h>  /* isspace, isdigit, isalnum, isalpha */
 #include <stdlib.h> /* atof */
 #include <math.h>   /* pow, floor */
@@ -71,10 +71,21 @@ typedef struct {
 
 	char     name[MEXPR_TOK_CAP];
 	mexpr_t *args[MEXPR_MAX_ARGS];
-	size_t   args_count;
+	size_t   argc;
 } mexpr_fn_t;
 
-typedef double (*mctx_native_t)(double[MEXPR_MAX_ARGS], size_t);
+typedef struct {
+	double val;
+
+	/* Error info */
+	const char *origin, *err;
+	/* WARNING: origin is the name of an identifier/function that caused the error and WILL be
+	   invalid after the expr tree is destroyed */
+} mctx_result_t;
+
+typedef mctx_result_t (*mctx_native_t)(double*, size_t);
+
+#define MCTX_NATIVE_VARGS (size_t)-1
 
 typedef struct {
 	const char   *name;
@@ -82,19 +93,65 @@ typedef struct {
 } mctx_fn_t;
 
 typedef struct {
+	const char *name;
+	double      val;
+} mctx_const_t;
+
+#ifndef MCTX_FNS_CHUNK_SIZE
+#	define MCTX_FNS_CHUNK_SIZE 16
+#endif
+
+#ifndef MCTX_CONSTS_CHUNK_SIZE
+#	define MCTX_CONSTS_CHUNK_SIZE 16
+#endif
+
+typedef struct {
 	mctx_fn_t *fns;
 	size_t     fns_count, fns_cap;
+
+	mctx_const_t *consts;
+	size_t        consts_count, consts_cap;
 } mctx_t;
 
-NOCH_DEF void mctx_init  (mctx_t *this); /* TODO */
-NOCH_DEF void mctx_deinit(mctx_t *this); /* TODO */
+NOCH_DEF void mctx_init  (mctx_t *this);
+NOCH_DEF void mctx_deinit(mctx_t *this);
 
-NOCH_DEF void mctx_add_fn(mctx_t *this, const char *name, mctx_native_t fn); /* TODO */
+NOCH_DEF void mctx_register_fn   (mctx_t *this, const char *name, mctx_native_t fn);
+NOCH_DEF void mctx_register_const(mctx_t *this, const char *name, double val);
+
+NOCH_DEF mctx_result_t mctx_ok(double val);
+NOCH_DEF mctx_result_t mctx_err(const char *origin, const char *err);
+
+#define MCTX_INVALID_AMOUNT_OF_ARGS mctx_err(NULL, "Invalid amount of arguments")
+#define MCTX_DIV_BY_ZERO            mctx_err(NULL, "Division by zero")
+
+NOCH_DEF mctx_result_t mctx_eval(mctx_t *this, mexpr_t *expr);
 
 NOCH_DEF mexpr_t *mexpr_parse(const char *in, size_t *row, size_t *col);
-NOCH_DEF double   mexpr_eval   (mexpr_t *this, mctx_t *ctx);
-NOCH_DEF void     mexpr_fprint (mexpr_t *this, FILE *file);
+NOCH_DEF void     mexpr_fprint(mexpr_t *this, FILE *file);
 NOCH_DEF void     mexpr_destroy(mexpr_t *this);
+
+/* Pre-defined native functions for mctx */
+
+#define DECL_MCTX_NATIVE(NAME) NOCH_DEF mctx_result_t NAME(double *args, size_t argc)
+
+DECL_MCTX_NATIVE(mctx_fn_sqrt);
+DECL_MCTX_NATIVE(mctx_fn_cbrt);
+DECL_MCTX_NATIVE(mctx_fn_hypot);
+DECL_MCTX_NATIVE(mctx_fn_sin);
+DECL_MCTX_NATIVE(mctx_fn_cos);
+DECL_MCTX_NATIVE(mctx_fn_tan);
+DECL_MCTX_NATIVE(mctx_fn_log);
+DECL_MCTX_NATIVE(mctx_fn_floor);
+DECL_MCTX_NATIVE(mctx_fn_ceil);
+DECL_MCTX_NATIVE(mctx_fn_round);
+DECL_MCTX_NATIVE(mctx_fn_atan);
+DECL_MCTX_NATIVE(mctx_fn_atan2);
+DECL_MCTX_NATIVE(mctx_fn_root);
+
+NOCH_DEF void mctx_register_basic_fns(mctx_t *this);
+
+#undef DECL_MCTX_NATIVE
 
 #ifdef __cplusplus
 }

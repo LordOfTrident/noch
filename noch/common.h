@@ -15,6 +15,10 @@ extern "C" {
 #include "internal/def.h"
 #include "internal/err.h"
 
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 #define UNUSED(X)      (void)X
 #define ARRAY_LEN(X)   (sizeof(X) / sizeof(*(X)))
 #define ZERO_STRUCT(X) memset(X, 0, sizeof(*(X)))
