@@ -1,4 +1,4 @@
-# TODO (65% done)
+# TODO (61% done)
 - [X] `common`   - Common C functionalities
 - [X] `args`     - Command line arguments/flags parser
 - [X] `attrs`    - C attribute macros
@@ -19,3 +19,4 @@
 - [ ] `region`   - Region allocator
 - [X] `mexpr`    - Math expression parser/evaluator
 - [ ] `ini`      - INI parser
+- [ ] `math`     - Useful math stuff

@@ -118,5 +118,11 @@
 		"title": "`ini`      - INI parser",
 		"desc": null,
 		"done": false
+	},
+	{
+		"type": "task",
+		"title": "`math`     - Useful math stuff",
+		"desc": null,
+		"done": false
 	}
 ]

@@ -52,10 +52,14 @@ typedef struct {
 	mexpr_t *a, *b;
 } mexpr_binary_t;
 
+#ifndef MEXPR_TOK_CAP
+#	define MEXPR_TOK_CAP 128
+#endif
+
 typedef struct {
 	mexpr_t _;
 
-	char *val;
+	char val[MEXPR_TOK_CAP];
 } mexpr_id_t;
 
 #ifndef MEXPR_MAX_ARGS
@@ -65,7 +69,7 @@ typedef struct {
 typedef struct {
 	mexpr_t _;
 
-	char    *name;
+	char     name[MEXPR_TOK_CAP];
 	mexpr_t *args[MEXPR_MAX_ARGS];
 	size_t   args_count;
 } mexpr_fn_t;

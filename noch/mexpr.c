@@ -32,6 +32,8 @@ extern "C" {
 #define mparser_parse_factor     NOCH_PRIVATE(mparser_parse_factor)
 #define mparser_parse_unary      NOCH_PRIVATE(mparser_parse_unary)
 #define mparser_parse_paren      NOCH_PRIVATE(mparser_parse_paren)
+#define mparser_parse_id         NOCH_PRIVATE(mparser_parse_id)
+#define mparser_parse_num        NOCH_PRIVATE(mparser_parse_num)
 #define mparser_expect_input_end NOCH_PRIVATE(mparser_expect_input_end)
 #define mparser_init             NOCH_PRIVATE(mparser_init)
 #define mparser_deinit           NOCH_PRIVATE(mparser_deinit)
@@ -89,7 +91,8 @@ static mexpr_id_t *mexpr_new_id(const char *val) {
 	MEXPR_ALLOC(id, mexpr_id_t);
 	id->_.type = MEXPR_ID;
 
-	id->val = mexpr_strdup(val);
+	NOCH_ASSERT(strlen(val) < MEXPR_TOK_CAP);
+	strcpy(id->val, val);
 	return id;
 }
 
@@ -98,7 +101,8 @@ static mexpr_fn_t *mexpr_new_fn(const char *name) {
 	MEXPR_ALLOC(fn, mexpr_fn_t);
 	fn->_.type = MEXPR_FN;
 
-	fn->name = mexpr_strdup(name);
+	NOCH_ASSERT(strlen(name) < MEXPR_TOK_CAP);
+	strcpy(fn->name, name);
 	return fn;
 }
 
@@ -118,14 +122,10 @@ NOCH_DEF void mexpr_destroy(mexpr_t *this) {
 		mexpr_destroy(bin->b);
 	} break;
 
-	case MEXPR_ID:
-		NOCH_FREE(((mexpr_id_t*)this)->val);
-		break;
+	case MEXPR_ID: break;
 
 	case MEXPR_FN: {
 		mexpr_fn_t *fn = (mexpr_fn_t*)this;
-		NOCH_FREE(fn->name);
-
 		for (size_t i = 0; i < fn->args_count; ++ i)
 			mexpr_destroy(fn->args[i]);
 	} break;
@@ -148,6 +148,8 @@ typedef enum {
 	MEXPR_TOK_LSQUARE,
 	MEXPR_TOK_RSQUARE,
 
+	MEXPR_TOK_COMMA,
+
 	MEXPR_TOK_ADD,
 	MEXPR_TOK_SUB,
 	MEXPR_TOK_MUL,
@@ -165,24 +167,23 @@ typedef struct {
 	size_t      tok_row, tok_col;
 
 	bool   prefixed_with_ws;
-	char  *data;
-	size_t data_cap, data_size;
+	char   data[MEXPR_TOK_CAP];
+	size_t data_size;
 
 	size_t err_row, err_col;
 } mparser_t;
 
 static void mparser_init(mparser_t *this, const char *in) {
-	this->in       = in;
-	this->it       = in;
-	this->bol      = this->it;
-	this->row      = 1;
-	this->data_cap = 64;
-	NOCH_MUST_ALLOC(char, this->data, this->data_cap);
+	memset(this, 0, sizeof(*this));
+
+	this->in  = in;
+	this->it  = in;
+	this->bol = this->it;
+	this->row = 1;
 }
 
-static void mparser_deinit(mparser_t *this) {
-	NOCH_FREE(this->data);
-}
+#define MEXPR_STR(X)   __MEXPR_STR(X)
+#define __MEXPR_STR(X) #X
 
 inline static int mparser_err(mparser_t *this, const char *msg, size_t row, size_t col) {
 	this->err_row = row;
@@ -201,10 +202,9 @@ static void mparser_data_clear(mparser_t *this) {
 }
 
 static int mparser_data_add(mparser_t *this, char ch) {
-	if (this->data_size + 1 >= this->data_cap) {
-		this->data_cap *= 2;
-		NOCH_MUST_REALLOC(char, this->data, this->data_cap);
-	}
+	if (this->data_size + 1 >= MEXPR_TOK_CAP)
+		return mparser_err(this, "Token exceeded maximum length of " MEXPR_STR(MEXPR_TOK_CAP - 1),
+		                   this->row, mparser_col(this));
 
 	this->data[this->data_size ++] = ch;
 	this->data[this->data_size]    = '\0';
@@ -245,8 +245,10 @@ static int mparser_tok_num(mparser_t *this) {
 			else
 				exponent = true;
 
-			if (this->it[1] == '+' || this->it[1] == '-')
-				++ this->it;
+			if (this->it[1] == '+' || this->it[1] == '-') {
+				if (mparser_data_add(this, *this->it ++) != 0)
+					return -1;
+			}
 
 			if (!isdigit(this->it[1]))
 				return mparser_err(this, "Expected a number", this->row, mparser_col(this) + 1);
@@ -263,10 +265,7 @@ static int mparser_tok_num(mparser_t *this) {
 				if (!isdigit(this->it[1]))
 					return mparser_err(this, "Expected a number", this->row, mparser_col(this) + 1);
 			}
-		} else if (isalpha(*this->it))
-			return mparser_err(this, "Unexpected character in number",
-			                   this->row, mparser_col(this));
-		else if (!isdigit(*this->it))
+		} else if (!isdigit(*this->it))
 			break;
 
 		if (mparser_data_add(this, *this->it ++) != 0)
@@ -277,17 +276,6 @@ static int mparser_tok_num(mparser_t *this) {
 }
 
 static int mparser_tok_id(mparser_t *this) {
-	NOCH_ASSERT(0 && "TODO");
-	/* TODO: Parse 1 letter variable names and multi-letter function names
-	 *
-	 * 2abc    is the same as 2 * a * b * c
-	 * 2abc(5) is the same as 2 * abc(), where abc is the name of the function
-	 *
-	 * Make the lexer detect this by reading the whole string of letters and then decide if its a
-	 * function name or variables multiplied together based on if the following character is a left
-	 * paranthesis (
-	 */
-
 	NOCH_ASSERT(isalpha(*this->it));
 
 	mparser_data_clear(this);
@@ -338,6 +326,7 @@ static int mparser_advance(mparser_t *this) {
 	case ')': return mparser_tok_single(this, MEXPR_TOK_RPAREN);
 	case '[': return mparser_tok_single(this, MEXPR_TOK_LSQUARE);
 	case ']': return mparser_tok_single(this, MEXPR_TOK_RSQUARE);
+	case ',': return mparser_tok_single(this, MEXPR_TOK_COMMA);
 	case '+': return mparser_tok_single(this, MEXPR_TOK_ADD);
 	case '-': return mparser_tok_single(this, MEXPR_TOK_SUB);
 	case '*': return mparser_tok_single(this, MEXPR_TOK_MUL);
@@ -385,7 +374,8 @@ static mexpr_t *mparser_parse_paren(mparser_t *this) {
 
 		const char *msg = end == MEXPR_TOK_LPAREN?
 		                  "Expected a matching \")\"" : "Expected a matching \"]\"";
-		return NOCH_NULL(mparser_err(this, msg, this->row, mparser_col(this)));
+		mparser_err(this, msg, this->row, mparser_col(this));
+		return NULL;
 	}
 
 	if (mparser_advance(this) != 0) {
@@ -409,6 +399,66 @@ static mexpr_t *mparser_parse_unary(mparser_t *this) {
 	return (mexpr_t*)mexpr_new_unary(op, expr);
 }
 
+static mexpr_t *mparser_parse_num(mparser_t *this) {
+	double num = atof(this->data);
+	if (mparser_advance(this) != 0)
+		return NULL;
+
+	return (mexpr_t*)mexpr_new_num(num);
+}
+
+static mexpr_t *mparser_parse_id(mparser_t *this) {
+	char *name = mexpr_strdup(this->data);
+	if (mparser_advance(this) != 0) {
+		NOCH_FREE(name);
+		return NULL;
+	}
+
+	if (this->tok == MEXPR_TOK_LPAREN) {
+		if (mparser_advance(this) != 0) {
+			NOCH_FREE(name);
+			return NULL;
+		}
+
+		mexpr_fn_t *fn = mexpr_new_fn(name);
+		NOCH_FREE(name);
+
+		while (true) {
+			if (fn->args_count >= MEXPR_MAX_ARGS) {
+				mparser_err(this, "Exceeded maximum amount of " MEXPR_STR(MEXPR_MAX_ARGS)
+				            " function arguments", this->row, mparser_col(this));
+				return NULL;
+			}
+
+			mexpr_t *expr = mparser_parse_arith(this);
+			fn->args[fn->args_count ++] = expr;
+			if (expr == NULL) {
+				mexpr_destroy((mexpr_t*)fn);
+				return NULL;
+			}
+
+			mexpr_tok_t tok = this->tok;
+			if (mparser_advance(this) != 0) {
+				mexpr_destroy((mexpr_t*)fn);
+				return NULL;
+			}
+
+			if (tok == MEXPR_TOK_RPAREN)
+				break;
+			else if (tok != MEXPR_TOK_COMMA) {
+				mparser_err(this, "Expected a \",\"", this->row, mparser_col(this));
+				return NULL;
+			}
+		}
+
+		return (mexpr_t*)fn;
+	} else {
+		mexpr_id_t *id = mexpr_new_id(name);
+		NOCH_FREE(name);
+		return (mexpr_t*)id;
+	}
+}
+
 static mexpr_t *mparser_parse_factor(mparser_t *this) {
 	if (this->it == this->in) {
 		if (mparser_advance(this) != 0)
@@ -420,29 +470,16 @@ static mexpr_t *mparser_parse_factor(mparser_t *this) {
 		mparser_err(this, "Unexpected end of input", this->tok_row, this->tok_col);
 		break;
 
-	case MEXPR_TOK_NUM: {
-		double num = atof(this->data);
-		if (mparser_advance(this) != 0)
-			return NULL;
+	case MEXPR_TOK_NUM: return mparser_parse_num(this);
+	case MEXPR_TOK_ID:  return mparser_parse_id(this);
 
-		return (mexpr_t*)mexpr_new_num(num);
-	}
-
-	case MEXPR_TOK_ADD: case MEXPR_TOK_SUB:
-		return mparser_parse_unary(this);
-
-	case MEXPR_TOK_LPAREN: case MEXPR_TOK_LSQUARE:
-		return mparser_parse_paren(this);
-
-	case MEXPR_TOK_ID: NOCH_ASSERT(0 && "TODO");  //return mparser_parse_id(this);
+	case MEXPR_TOK_ADD:    case MEXPR_TOK_SUB:     return mparser_parse_unary(this);
+	case MEXPR_TOK_LPAREN: case MEXPR_TOK_LSQUARE: return mparser_parse_paren(this);
 
 	default: mparser_err(this, "Unexpected token", this->tok_row, this->tok_col);
 	}
 
 	return NULL;
-
-	mexpr_new_fn("");
-	mexpr_new_id("");
 }
 
 static mexpr_t *mparser_parse_pow(mparser_t *this) {
@@ -470,15 +507,20 @@ fail:
 	return NULL;
 }
 
+static bool mparser_at_implicit_mul(mparser_t *this) {
+	return !this->prefixed_with_ws &&
+	       (this->tok == MEXPR_TOK_LPAREN || this->tok == MEXPR_TOK_ID);
+}
+
 static mexpr_t *mparser_parse_term(mparser_t *this) {
 	mexpr_t *left = mparser_parse_pow(this);
 	if (left == NULL)
 		return NULL;
 
-	while (this->tok == MEXPR_TOK_MUL || this->tok == MEXPR_TOK_DIV || this->tok == MEXPR_TOK_MOD ||
-	       (!this->prefixed_with_ws && this->tok == MEXPR_TOK_LPAREN)) {
+	while (this->tok == MEXPR_TOK_MUL || this->tok == MEXPR_TOK_DIV ||
+	       this->tok == MEXPR_TOK_MOD || mparser_at_implicit_mul(this)) {
 		char op;
-		if (this->tok == MEXPR_TOK_LPAREN)
+		if (mparser_at_implicit_mul(this))
 			op = '*';
 		else {
 			op = mexpr_tok_to_op(this->tok);
@@ -535,7 +577,7 @@ static int mparser_expect_input_end(mparser_t *this) {
 NOCH_DEF mexpr_t *mexpr_parse(const char *in, size_t *row, size_t *col) {
 	NOCH_ASSERT(in != NULL);
 
-	mparser_t parser_ = {0}, *parser = &parser_;
+	mparser_t parser_, *parser = &parser_;
 	mparser_init(parser, in);
 
 	mexpr_t *expr = mparser_parse_arith(parser);
@@ -546,7 +588,6 @@ NOCH_DEF mexpr_t *mexpr_parse(const char *in, size_t *row, size_t *col) {
 		}
 	}
 
-	mparser_deinit(parser);
 	if (row != NULL) *row = parser->err_row;
 	if (col != NULL) *col = parser->err_col;
 	return expr;
@@ -596,9 +637,9 @@ NOCH_DEF double mexpr_eval(mexpr_t *this, mctx_t *ctx) {
 
 #undef MEXPR_NAN
 
-static void mexpr_fprint_float(float num, FILE *file) {
+static void mexpr_fprint_float(double num, FILE *file) {
 	char buf[256];
-	snprintf(buf, sizeof(buf), "%f", num);
+	snprintf(buf, sizeof(buf), "%.13f", num);
 
 	bool   found = false;
 	size_t i;
@@ -630,7 +671,13 @@ static void mexpr_fprint_float(float num, FILE *file) {
 /* TODO: Do not print redundant paranthesis */
 NOCH_DEF void mexpr_fprint(mexpr_t *this, FILE *file) {
 	switch (this->type) {
-	case MEXPR_NUM: mexpr_fprint_float(((mexpr_num_t*)this)->val, file); break;
+	case MEXPR_NUM:
+		mexpr_fprint_float(((mexpr_num_t*)this)->val, file);
+		break;
+
+	case MEXPR_ID:
+		fprintf(file, "%s", ((mexpr_id_t*)this)->val);
+		break;
 
 	case MEXPR_UNARY: {
 		mexpr_unary_t *un = (mexpr_unary_t*)this;
@@ -648,12 +695,24 @@ NOCH_DEF void mexpr_fprint(mexpr_t *this, FILE *file) {
 		fprintf(file, ")");
 	} break;
 
-	case MEXPR_ID: NOCH_ASSERT(0 && "TODO");
-	case MEXPR_FN: NOCH_ASSERT(0 && "TODO");
+	case MEXPR_FN: {
+		mexpr_fn_t *fn = (mexpr_fn_t*)this;
+		fprintf(file, "%s(", fn->name);
+		for (size_t i = 0; i < fn->args_count; ++ i) {
+			if (i > 0)
+				fprintf(file, ", ");
+
+			mexpr_fprint(fn->args[i], file);
+		}
+		fprintf(file, ")");
+	} break;
 
 	default: NOCH_ASSERT(0 && "Unknown expression type");
 	}
 }
+
+#undef MEXPR_STR
+#undef __MEXPR_STR
 
 #undef mexpr_strdup
 #undef mexpr_new_num
@@ -678,11 +737,15 @@ NOCH_DEF void mexpr_fprint(mexpr_t *this, FILE *file) {
 #undef mparser_parse_factor
 #undef mparser_parse_unary
 #undef mparser_parse_paren
+#undef mparser_parse_id
+#undef mparser_parse_num
 #undef mparser_expect_input_end
 #undef mparser_init
 #undef mparser_deinit
 #undef mparser_err
 #undef mparser_col
+#undef mexpr_fprint_float
+#undef mexpr_mod
 
 #ifdef __cplusplus
 }

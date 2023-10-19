@@ -4,6 +4,10 @@
 extern "C" {
 #endif
 
+#ifndef __cplusplus
+#	include <stdbool.h> /* bool, true, false */
+#endif
+
 #include <stdlib.h> /* exit, EXIT_FAILURE */
 #include <stdio.h>  /* fprintf, stderr */
 #include <string.h> /* memset, strlen, strcpy */
@@ -33,6 +37,9 @@ extern "C" {
 	 exit(EXIT_FAILURE))
 
 NOCH_DEF char *xstrdup(const char *str);
+
+NOCH_DEF void fputn(double num, FILE *file);
+NOCH_DEF void putn (double num);
 
 #ifdef __cplusplus
 }

@@ -24,6 +24,7 @@ log: bin
 
 common: bin
 	$(CC) examples/common/common.c $(CFLAGS) -o bin/common
+	$(CC) examples/common/print_floats.c $(CFLAGS) -o bin/print_floats
 
 sv: bin
 	$(CC) examples/sv/find.c $(CFLAGS) -o bin/sv_find

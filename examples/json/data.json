@@ -9,6 +9,8 @@
 
 	"ansi-escape-sequence": "\u001B[32m",
 
+	"number": 5e+5,
+
 	"position": {
 		"x": 2.5,
 		"y": 4

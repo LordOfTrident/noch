@@ -300,9 +300,9 @@ static int jstream_print_str(jstream_t *this, json_str_t *str) {
 	return 0;
 }
 
-static int jstream_print_float(jstream_t *this, float num) {
+static int jstream_print_float(jstream_t *this, double num) {
 	char buf[256];
-	snprintf(buf, sizeof(buf), "%f", num);
+	snprintf(buf, sizeof(buf), "%.13f", num);
 
 	bool   found = false;
 	size_t i;
@@ -481,6 +481,8 @@ typedef struct {
 } jparser_t;
 
 static void jparser_init(jparser_t *this, const char *in) {
+	memset(this, 0, sizeof(*this));
+
 	this->in       = in;
 	this->it       = in;
 	this->bol      = this->it;
@@ -509,7 +511,7 @@ static void jparser_data_clear(jparser_t *this) {
 	this->data_size = 0;
 }
 
-static int jparser_data_add(jparser_t *this, char ch) {
+static void jparser_data_add(jparser_t *this, char ch) {
 	if (this->data_size + 1 >= this->data_cap) {
 		this->data_cap *= 2;
 		NOCH_MUST_REALLOC(char, this->data, this->data_cap);
@@ -517,7 +519,6 @@ static int jparser_data_add(jparser_t *this, char ch) {
 
 	this->data[this->data_size ++] = ch;
 	this->data[this->data_size]    = '\0';
-	return 0;
 }
 
 /* Not standard!!!! but very useful */
@@ -638,10 +639,8 @@ static int jparser_unicode_seq(jparser_t *this) {
 	} else
 		return jparser_err(this, "Invalid unicode sequence", this->row, col);
 
-	for (const char *it = out; *it != '\0'; ++ it) {
-		if (jparser_data_add(this, *it) != 0)
-			return -1;
-	}
+	for (const char *it = out; *it != '\0'; ++ it)
+		jparser_data_add(this, *it);
 
     return 0;
 }
@@ -683,14 +682,11 @@ static int jparser_tok_str(jparser_t *this) {
 			                            this->row, jparser_col(this) - 1);
 			}
 
-			if (jparser_data_add(this, escaped) != 0)
-				return -1;
+			jparser_data_add(this, escaped);
 		} else if (*this->it == '\\') {
 			escape = true;
-		} else {
-			if (jparser_data_add(this, *this->it) != 0)
-				return -1;
-		}
+		} else
+			jparser_data_add(this, *this->it);
 
 		++ this->it;
 	}
@@ -708,8 +704,7 @@ static int jparser_tok_num(jparser_t *this) {
 	bool exponent = false, fpoint = false;
 
 	if (*this->it == '-') {
-		if (jparser_data_add(this, *this->it ++) != 0)
-			return -1;
+		jparser_data_add(this, *this->it ++);
 
 		if (!isdigit(*this->it))
 			return jparser_err(this, "Expected a number", this->row, jparser_col(this));
@@ -724,7 +719,7 @@ static int jparser_tok_num(jparser_t *this) {
 				exponent = true;
 
 			if (this->it[1] == '+' || this->it[1] == '-')
-				++ this->it;
+				jparser_data_add(this, *this->it ++);
 
 			if (!isdigit(this->it[1]))
 				return jparser_err(this, "Expected a number", this->row, jparser_col(this) + 1);
@@ -747,8 +742,7 @@ static int jparser_tok_num(jparser_t *this) {
 		else if (!isdigit(*this->it))
 			break;
 
-		if (jparser_data_add(this, *this->it ++) != 0)
-			return -1;
+		jparser_data_add(this, *this->it ++);
 	}
 
 	this->tok = exponent || fpoint? JSON_TOK_FLOAT : JSON_TOK_INT;
@@ -762,8 +756,7 @@ static int jparser_tok_id(jparser_t *this) {
 	jparser_tok_start_here(this);
 
 	while (isalnum(*this->it)) {
-		if (jparser_data_add(this, *this->it) != 0)
-			return -1;
+		jparser_data_add(this, *this->it);
 
 		++ this->it;
 	}
@@ -988,7 +981,7 @@ NOCH_DEF json_t *json_from_file(const char *path, size_t *row, size_t *col) {
 NOCH_DEF json_t *json_from_mem(const char *in, size_t *row, size_t *col) {
 	NOCH_ASSERT(in != NULL);
 
-	jparser_t parser_ = {0}, *parser = &parser_;
+	jparser_t parser_, *parser = &parser_;
 	jparser_init(parser, in);
 
 	json_t *json = jparser_parse(parser);
@@ -1034,6 +1027,11 @@ NOCH_DEF json_t *json_from_mem(const char *in, size_t *row, size_t *col) {
 #undef jparser_parse
 #undef jparser_parse_obj
 #undef jparser_parse_list
+#undef jparser_err
+#undef jparser_col
+#undef jparser_init
+#undef jparser_deinit
+#undef jparser_expect_input_end
 
 #ifdef __cplusplus
 }
