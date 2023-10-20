@@ -441,8 +441,14 @@ static mexpr_t *NOCH_PRIV(mparser_parse_id)(mparser_t *this) {
 
 		mexpr_fn_t *fn = mexpr_new_fn(name);
 
-		if (this->tok == MEXPR_TOK_RPAREN)
+		if (this->tok == MEXPR_TOK_RPAREN) {
+			if (mparser_advance(this) != 0) {
+				mexpr_destroy((mexpr_t*)fn);
+				return NULL;
+			}
+
 			return (mexpr_t*)fn;
+		}
 
 		while (true) {
 			if (fn->argc >= MEXPR_MAX_ARGS) {
