@@ -50,12 +50,12 @@ typedef struct {
 
 NOCH_DEF args_t args_new(int argc, const char **argv);
 
-#define FOREACH_IN_ARGS(ARGS, VAR, BODY)                                  \
-	do {                                                                  \
-		for (int _foreach_i = 0; _foreach_i < (ARGS)->c; ++ _foreach_i) { \
-			const char *VAR = (ARGS)->v[_foreach_i];                      \
-			BODY                                                          \
-		}                                                                 \
+#define FOREACH_IN_ARGS(ARGS, VAR, BODY)                                     \
+	do {                                                                     \
+		for (size_t _foreach_i = 0; _foreach_i < (ARGS)->c; ++ _foreach_i) { \
+			const char *VAR = (ARGS)->v[_foreach_i];                         \
+			BODY                                                             \
+		}                                                                    \
 	} while (0)
 
 NOCH_DEF const char *args_shift      (args_t *args);
