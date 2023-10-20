@@ -60,6 +60,13 @@ int main(void) {
 	printf("\n--------\n");
 
 	eval(ctx, "root(25, 2) + root(256, 8)");
+	printf("\n--------\n");
+
+	eval(ctx, "5 x 5 + 5 * 5");
+	printf("\n--------\n");
+
+	register_const(ctx, "x", 5);
+	eval(ctx, "x x x + x * x");
 
 	mctx_deinit(ctx);
 	return 0;

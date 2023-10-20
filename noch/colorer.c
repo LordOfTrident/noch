@@ -6,21 +6,21 @@ extern "C" {
 
 #include "colorer.h"
 
-#define fg_color_to_attr NOCH_PRIVATE(fg_color_to_attr)
-#define bg_color_to_attr NOCH_PRIVATE(bg_color_to_attr)
-#define fg_color         NOCH_PRIVATE(fg_color)
-#define bg_color         NOCH_PRIVATE(bg_color)
-#define stdout_handle    NOCH_PRIVATE(stdout_handle)
-#define stderr_handle    NOCH_PRIVATE(stderr_handle)
-#define prev_csbi        NOCH_PRIVATE(prev_csbi)
-#define file_to_handle   NOCH_PRIVATE(file_to_handle)
-#define fg_color_to_ansi NOCH_PRIVATE(fg_color_to_ansi)
-#define bg_color_to_ansi NOCH_PRIVATE(bg_color_to_ansi)
-#define has_color        NOCH_PRIVATE(has_color)
+#define fg_color_to_attr NOCH_PRIV(fg_color_to_attr)
+#define bg_color_to_attr NOCH_PRIV(bg_color_to_attr)
+#define fg_color         NOCH_PRIV(fg_color)
+#define bg_color         NOCH_PRIV(bg_color)
+#define stdout_handle    NOCH_PRIV(stdout_handle)
+#define stderr_handle    NOCH_PRIV(stderr_handle)
+#define prev_csbi        NOCH_PRIV(prev_csbi)
+#define file_to_handle   NOCH_PRIV(file_to_handle)
+#define fg_color_to_ansi NOCH_PRIV(fg_color_to_ansi)
+#define bg_color_to_ansi NOCH_PRIV(bg_color_to_ansi)
+#define has_color        NOCH_PRIV(has_color)
 
 #ifdef PLATFORM_WINDOWS
 
-static WORD fg_color_to_attr[] = {
+static WORD NOCH_PRIV(fg_color_to_attr)[] = {
 	/* COLOR_BLACK   */ 0,
 	/* COLOR_RED     */ FOREGROUND_RED,
 	/* COLOR_GREEN   */ FOREGROUND_GREEN,
@@ -41,7 +41,7 @@ static WORD fg_color_to_attr[] = {
 	                           FOREGROUND_INTENSITY,
 };
 
-static WORD bg_color_to_attr[] = {
+static WORD NOCH_PRIV(bg_color_to_attr)[] = {
 	/* COLOR_BLACK   */ 0,
 	/* COLOR_RED     */ BACKGROUND_RED,
 	/* COLOR_GREEN   */ BACKGROUND_GREEN,
@@ -62,15 +62,15 @@ static WORD bg_color_to_attr[] = {
 	                           BACKGROUND_INTENSITY,
 };
 
-static WORD fg_color = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-static WORD bg_color = 0;
+static WORD NOCH_PRIV(fg_color) = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+static WORD NOCH_PRIV(bg_color) = 0;
 
-static HANDLE stdout_handle;
-static HANDLE stderr_handle;
+static HANDLE NOCH_PRIV(stdout_handle);
+static HANDLE NOCH_PRIV(stderr_handle);
 
-static CONSOLE_SCREEN_BUFFER_INFO prev_csbi;
+static CONSOLE_SCREEN_BUFFER_INFO NOCH_PRIV(prev_csbi);
 
-static HANDLE file_to_handle(FILE *file) {
+static HANDLE NOCH_PRIV(file_to_handle)(FILE *file) {
 	if (file == stdout)
 		return stdout_handle;
 	else if (file == stderr)
@@ -81,7 +81,7 @@ static HANDLE file_to_handle(FILE *file) {
 
 #else
 
-static const char *fg_color_to_ansi[] = {
+static const char *NOCH_PRIV(fg_color_to_ansi)[] = {
 	/* COLOR_BLACK   */ "\x1b[30m",
 	/* COLOR_RED     */ "\x1b[31m",
 	/* COLOR_GREEN   */ "\x1b[32m",
@@ -101,7 +101,7 @@ static const char *fg_color_to_ansi[] = {
 	/* COLOR_BRIGHT_WHITE   */ "\x1b[97m",
 };
 
-static const char *bg_color_to_ansi[] = {
+static const char *NOCH_PRIV(bg_color_to_ansi)[] = {
 	/* COLOR_BLACK   */ "\x1b[40m",
 	/* COLOR_RED     */ "\x1b[41m",
 	/* COLOR_GREEN   */ "\x1b[42m",
@@ -123,7 +123,7 @@ static const char *bg_color_to_ansi[] = {
 
 #endif
 
-static bool has_color(FILE *file) {
+static bool NOCH_PRIV(has_color)(FILE *file) {
 	return file == stdout || file == stderr;
 }
 

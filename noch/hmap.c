@@ -9,7 +9,7 @@ extern "C" {
 
 #include "args.h"
 
-#define hmap_find NOCH_PRIVATE(hmap_find)
+#define hmap_find NOCH_PRIV(hmap_find)
 
 #define HMAPE_SIZE(THIS)   (sizeof(hmape_t) + (THIS)->valsz)
 #define HMAPE_VAL(THIS, E) (void*)((char*)(E) + sizeof(hmape_t))
@@ -38,7 +38,7 @@ NOCH_DEF void hmap_deinit(hmap_t *this) {
 	NOCH_FREE(this->buf);
 }
 
-static hmape_t *hmap_find(hmap_t *this, const char *key) {
+static hmape_t *NOCH_PRIV(hmap_find)(hmap_t *this, const char *key) {
 	unsigned hash = this->hash(key);
 	size_t   idx  = hash % this->cap;
 

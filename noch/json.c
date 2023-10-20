@@ -8,38 +8,38 @@ extern "C" {
 
 #include "json.h"
 
-#define json_null_instance        NOCH_PRIVATE(json_null_instance)
-#define json_new                  NOCH_PRIVATE(json_new)
-#define json_strdup               NOCH_PRIVATE(json_strdup)
-#define jstream_t                 NOCH_PRIVATE(jstream_t)
-#define jstream_print             NOCH_PRIVATE(jstream_print)
-#define jstream_printf            NOCH_PRIVATE(jstream_printf)
-#define jstream_print_str         NOCH_PRIVATE(jstream_print_str)
-#define jstream_print_float       NOCH_PRIVATE(jstream_print_float)
-#define jstream_indent            NOCH_PRIVATE(jstream_indent)
-#define jstream_print_json        NOCH_PRIVATE(jstream_print_json)
-#define json_tok_t                NOCH_PRIVATE(json_tok_t)
-#define jparser_t                 NOCH_PRIVATE(jparser_t)
-#define jparser_data_clear        NOCH_PRIVATE(jparser_data_clear)
-#define jparser_data_add          NOCH_PRIVATE(jparser_data_add)
-#define jparser_skip_cmnt         NOCH_PRIVATE(jparser_skip_cmnt)
-#define jparser_skip_ws_and_cmnts NOCH_PRIVATE(jparser_skip_ws_and_cmnts)
-#define jparser_tok_start_here    NOCH_PRIVATE(jparser_tok_start_here)
-#define jparser_tok_single        NOCH_PRIVATE(jparser_tok_single)
-#define jparser_get_hex4          NOCH_PRIVATE(jparser_get_hex4)
-#define jparser_unicode_seq       NOCH_PRIVATE(jparser_unicode_seq)
-#define jparser_tok_str           NOCH_PRIVATE(jparser_tok_str)
-#define jparser_tok_num           NOCH_PRIVATE(jparser_tok_num)
-#define jparser_tok_id            NOCH_PRIVATE(jparser_tok_id)
-#define jparser_advance           NOCH_PRIVATE(jparser_advance)
-#define jparser_parse             NOCH_PRIVATE(jparser_parse)
-#define jparser_parse_obj         NOCH_PRIVATE(jparser_parse_obj)
-#define jparser_parse_list        NOCH_PRIVATE(jparser_parse_list)
-#define jparser_err               NOCH_PRIVATE(jparser_err)
-#define jparser_col               NOCH_PRIVATE(jparser_col)
-#define jparser_init              NOCH_PRIVATE(jparser_init)
-#define jparser_deinit            NOCH_PRIVATE(jparser_deinit)
-#define jparser_expect_input_end  NOCH_PRIVATE(jparser_expect_input_end)
+#define json_null_instance        NOCH_PRIV(json_null_instance)
+#define json_new                  NOCH_PRIV(json_new)
+#define json_strdup               NOCH_PRIV(json_strdup)
+#define jstream_t                 NOCH_PRIV(jstream_t)
+#define jstream_print             NOCH_PRIV(jstream_print)
+#define jstream_printf            NOCH_PRIV(jstream_printf)
+#define jstream_print_str         NOCH_PRIV(jstream_print_str)
+#define jstream_print_float       NOCH_PRIV(jstream_print_float)
+#define jstream_indent            NOCH_PRIV(jstream_indent)
+#define jstream_print_json        NOCH_PRIV(jstream_print_json)
+#define json_tok_t                NOCH_PRIV(json_tok_t)
+#define jparser_t                 NOCH_PRIV(jparser_t)
+#define jparser_data_clear        NOCH_PRIV(jparser_data_clear)
+#define jparser_data_add          NOCH_PRIV(jparser_data_add)
+#define jparser_skip_cmnt         NOCH_PRIV(jparser_skip_cmnt)
+#define jparser_skip_ws_and_cmnts NOCH_PRIV(jparser_skip_ws_and_cmnts)
+#define jparser_tok_start_here    NOCH_PRIV(jparser_tok_start_here)
+#define jparser_tok_single        NOCH_PRIV(jparser_tok_single)
+#define jparser_get_hex4          NOCH_PRIV(jparser_get_hex4)
+#define jparser_unicode_seq       NOCH_PRIV(jparser_unicode_seq)
+#define jparser_tok_str           NOCH_PRIV(jparser_tok_str)
+#define jparser_tok_num           NOCH_PRIV(jparser_tok_num)
+#define jparser_tok_id            NOCH_PRIV(jparser_tok_id)
+#define jparser_advance           NOCH_PRIV(jparser_advance)
+#define jparser_parse             NOCH_PRIV(jparser_parse)
+#define jparser_parse_obj         NOCH_PRIV(jparser_parse_obj)
+#define jparser_parse_list        NOCH_PRIV(jparser_parse_list)
+#define jparser_err               NOCH_PRIV(jparser_err)
+#define jparser_col               NOCH_PRIV(jparser_col)
+#define jparser_init              NOCH_PRIV(jparser_init)
+#define jparser_deinit            NOCH_PRIV(jparser_deinit)
+#define jparser_expect_input_end  NOCH_PRIV(jparser_expect_input_end)
 
 const char *json_type_to_str_map[JSON_TYPES_COUNT] = {
 	"null", /* JSON_NULL */
@@ -58,13 +58,13 @@ const char *json_type_to_str(json_type_t type) {
 	return json_type_to_str_map[type];
 }
 
-static json_t json_null_instance;
+static json_t NOCH_PRIV(json_null_instance);
 
 NOCH_DEF json_t *json_null(void) {
 	return &json_null_instance;
 }
 
-static char *json_strdup(const char *str) {
+static char *NOCH_PRIV(json_strdup)(const char *str) {
 	char *duped;
 	NOCH_MUST_ALLOC(char, duped, strlen(str) + 1);
 
@@ -233,9 +233,9 @@ typedef struct {
 	FILE  *file;
 	char  *buf;
 	size_t size, cap;
-} jstream_t;
+} NOCH_PRIV(jstream_t);
 
-static int jstream_print(jstream_t *this, const char *str) {
+static int NOCH_PRIV(jstream_print)(jstream_t *this, const char *str) {
 	if (this->file != NULL)
 		fputs(str, this->file);
 	else {
@@ -255,7 +255,7 @@ static int jstream_print(jstream_t *this, const char *str) {
 	return 0;
 }
 
-static int jstream_printf(jstream_t *this, const char *fmt, ...) {
+static int NOCH_PRIV(jstream_printf)(jstream_t *this, const char *fmt, ...) {
 	char    str[1024];
 	va_list args;
 
@@ -275,7 +275,7 @@ static int jstream_printf(jstream_t *this, const char *fmt, ...) {
 #define JSTREAM_PRINT(S, STR)  JSTREAM_MUST(jstream_print(S, STR))
 #define JSTREAM_PRINTF(S, ...) JSTREAM_MUST(jstream_printf(S, __VA_ARGS__))
 
-static int jstream_print_str(jstream_t *this, json_str_t *str) {
+static int NOCH_PRIV(jstream_print_str)(jstream_t *this, json_str_t *str) {
 	JSTREAM_PRINT(this, "\"");
 
 	for (size_t i = 0; i < str->len; ++ i) {
@@ -300,7 +300,7 @@ static int jstream_print_str(jstream_t *this, json_str_t *str) {
 	return 0;
 }
 
-static int jstream_print_float(jstream_t *this, double num) {
+static int NOCH_PRIV(jstream_print_float)(jstream_t *this, double num) {
 	char buf[256];
 	snprintf(buf, sizeof(buf), "%.13f", num);
 
@@ -334,7 +334,7 @@ static int jstream_print_float(jstream_t *this, double num) {
 	return 0;
 }
 
-static int jstream_indent(jstream_t *this, size_t nest) {
+static int NOCH_PRIV(jstream_indent)(jstream_t *this, size_t nest) {
 	if (this->file != NULL) {
 		for (size_t i = 0; i < nest; ++ i)
 			fputc('\t', this->file);
@@ -358,7 +358,7 @@ static int jstream_indent(jstream_t *this, size_t nest) {
 
 #define JSTREAM_INDENT(S, NEST) JSTREAM_MUST(jstream_indent(S, NEST))
 
-static int jstream_print_json(jstream_t *this, json_t *json, size_t nest, bool comma) {
+static int NOCH_PRIV(jstream_print_json)(jstream_t *this, json_t *json, size_t nest, bool comma) {
 	NOCH_ASSERT(json != NULL);
 
 	switch (json->type) {
@@ -480,7 +480,7 @@ typedef struct {
 	size_t err_row, err_col;
 } jparser_t;
 
-static void jparser_init(jparser_t *this, const char *in) {
+static void NOCH_PRIV(jparser_init)(jparser_t *this, const char *in) {
 	memset(this, 0, sizeof(*this));
 
 	this->in       = in;
@@ -491,27 +491,27 @@ static void jparser_init(jparser_t *this, const char *in) {
 	NOCH_MUST_ALLOC(char, this->data, this->data_cap);
 }
 
-static void jparser_deinit(jparser_t *this) {
+static void NOCH_PRIV(jparser_deinit)(jparser_t *this) {
 	NOCH_FREE(this->data);
 }
 
-inline static int jparser_err(jparser_t *this, const char *msg, size_t row, size_t col) {
+inline static int NOCH_PRIV(jparser_err)(jparser_t *this, const char *msg, size_t row, size_t col) {
 	this->err_row = row;
 	this->err_col = col;
 	NOCH_PARSER_ERR(msg);
 	return -1;
 }
 
-inline static size_t jparser_col(jparser_t *this) {
+inline static size_t NOCH_PRIV(jparser_col)(jparser_t *this) {
 	return this->it - this->bol + 1;
 }
 
-static void jparser_data_clear(jparser_t *this) {
+static void NOCH_PRIV(jparser_data_clear)(jparser_t *this) {
 	this->data[0]   = '\0';
 	this->data_size = 0;
 }
 
-static void jparser_data_add(jparser_t *this, char ch) {
+static void NOCH_PRIV(jparser_data_add)(jparser_t *this, char ch) {
 	if (this->data_size + 1 >= this->data_cap) {
 		this->data_cap *= 2;
 		NOCH_MUST_REALLOC(char, this->data, this->data_cap);
@@ -522,7 +522,7 @@ static void jparser_data_add(jparser_t *this, char ch) {
 }
 
 /* Not standard!!!! but very useful */
-static int jparser_skip_cmnt(jparser_t *this) {
+static int NOCH_PRIV(jparser_skip_cmnt)(jparser_t *this) {
 	NOCH_ASSERT(*this->it == '/' && this->it[1] == '*');
 
 	size_t row = this->row, col = jparser_col(this);
@@ -544,7 +544,7 @@ static int jparser_skip_cmnt(jparser_t *this) {
 	return 0;
 }
 
-static int jparser_skip_ws_and_cmnts(jparser_t *this) {
+static int NOCH_PRIV(jparser_skip_ws_and_cmnts)(jparser_t *this) {
 	while (*this->it != '\0') {
 		if (*this->it == '/' && this->it[1] == '*') {
 			if (jparser_skip_cmnt(this) != 0)
@@ -563,12 +563,12 @@ static int jparser_skip_ws_and_cmnts(jparser_t *this) {
 	return 0;
 }
 
-static void jparser_tok_start_here(jparser_t *this) {
+static void NOCH_PRIV(jparser_tok_start_here)(jparser_t *this) {
 	this->tok_row = this->row;
 	this->tok_col = jparser_col(this);
 }
 
-static int jparser_tok_single(jparser_t *this, json_tok_t tok) {
+static int NOCH_PRIV(jparser_tok_single)(jparser_t *this, json_tok_t tok) {
 	jparser_data_clear(this);
 	jparser_tok_start_here(this);
 	this->tok = tok;
@@ -577,7 +577,7 @@ static int jparser_tok_single(jparser_t *this, json_tok_t tok) {
 	return 0;
 }
 
-static int jparser_get_hex4(jparser_t *this, uint16_t *ret) {
+static int NOCH_PRIV(jparser_get_hex4)(jparser_t *this, uint16_t *ret) {
 	NOCH_ASSERT(ret != NULL);
 
 	char buf[5] = {0};
@@ -592,7 +592,7 @@ static int jparser_get_hex4(jparser_t *this, uint16_t *ret) {
 	return 0;
 }
 
-static int jparser_unicode_seq(jparser_t *this) {
+static int NOCH_PRIV(jparser_unicode_seq)(jparser_t *this) {
 	size_t col = jparser_col(this) - 1;
 	++ this->it;
 
@@ -645,7 +645,7 @@ static int jparser_unicode_seq(jparser_t *this) {
     return 0;
 }
 
-static int jparser_tok_str(jparser_t *this) {
+static int NOCH_PRIV(jparser_tok_str)(jparser_t *this) {
 	NOCH_ASSERT(*this->it == '"');
 
 	jparser_data_clear(this);
@@ -695,7 +695,7 @@ static int jparser_tok_str(jparser_t *this) {
 	return 0;
 }
 
-static int jparser_tok_num(jparser_t *this) {
+static int NOCH_PRIV(jparser_tok_num)(jparser_t *this) {
 	NOCH_ASSERT(isdigit(*this->it) || *this->it == '-');
 
 	jparser_data_clear(this);
@@ -749,7 +749,7 @@ static int jparser_tok_num(jparser_t *this) {
 	return 0;
 }
 
-static int jparser_tok_id(jparser_t *this) {
+static int NOCH_PRIV(jparser_tok_id)(jparser_t *this) {
 	NOCH_ASSERT(isalpha(*this->it));
 
 	jparser_data_clear(this);
@@ -771,7 +771,7 @@ static int jparser_tok_id(jparser_t *this) {
 	return 0;
 }
 
-static int jparser_advance(jparser_t *this) {
+static int NOCH_PRIV(jparser_advance)(jparser_t *this) {
 	if (jparser_skip_ws_and_cmnts(this) != 0)
 		return -1;
 	else if (*this->it == '\0') {
@@ -815,9 +815,9 @@ static int jparser_advance(jparser_t *this) {
 		}                                                    \
 	} while (0)
 
-static json_t *jparser_parse(jparser_t *this);
+static json_t *NOCH_PRIV(jparser_parse)(jparser_t *this);
 
-static json_obj_t *jparser_parse_obj(jparser_t *this) {
+static json_obj_t *NOCH_PRIV(jparser_parse_obj)(jparser_t *this) {
 	char       *key = NULL;
 	json_obj_t *obj = json_new_obj();
 	if (jparser_advance(this) != 0)
@@ -877,7 +877,7 @@ fail:
 	return NULL;
 }
 
-static json_list_t *jparser_parse_list(jparser_t *this) {
+static json_list_t *NOCH_PRIV(jparser_parse_list)(jparser_t *this) {
 	json_list_t *list = json_new_list();
 	if (jparser_advance(this) != 0)
 		goto fail;
@@ -911,7 +911,7 @@ fail:
 	return NULL;
 }
 
-static int jparser_expect_input_end(jparser_t *this) {
+static int NOCH_PRIV(jparser_expect_input_end)(jparser_t *this) {
 	if (jparser_advance(this) != 0)
 		return -1;
 
@@ -921,7 +921,7 @@ static int jparser_expect_input_end(jparser_t *this) {
 	return 0;
 }
 
-static json_t *jparser_parse(jparser_t *this) {
+static json_t *NOCH_PRIV(jparser_parse)(jparser_t *this) {
 	if (this->it == this->in) {
 		if (jparser_advance(this) != 0)
 			return NULL;

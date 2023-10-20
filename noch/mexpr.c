@@ -9,47 +9,39 @@ extern "C" {
 
 #include "mexpr.h"
 
-#define mexpr_strdup             NOCH_PRIVATE(mexpr_strdup)
-#define mexpr_new_num            NOCH_PRIVATE(mexpr_new_num)
-#define mexpr_new_unary          NOCH_PRIVATE(mexpr_new_unary)
-#define mexpr_new_binary         NOCH_PRIVATE(mexpr_new_binary)
-#define mexpr_new_id             NOCH_PRIVATE(mexpr_new_id)
-#define mexpr_new_fn             NOCH_PRIVATE(mexpr_new_fn)
-#define mexpr_tok_t              NOCH_PRIVATE(mexpr_tok_t)
-#define mparser_t                NOCH_PRIVATE(mparser_t)
-#define mparser_data_clear       NOCH_PRIVATE(mparser_data_clear)
-#define mparser_data_add         NOCH_PRIVATE(mparser_data_add)
-#define mparser_skip_ws          NOCH_PRIVATE(mparser_skip_ws)
-#define mparser_tok_start_here   NOCH_PRIVATE(mparser_tok_start_here)
-#define mparser_tok_single       NOCH_PRIVATE(mparser_tok_single)
-#define mparser_tok_num          NOCH_PRIVATE(mparser_tok_num)
-#define mparser_tok_id           NOCH_PRIVATE(mparser_tok_id)
-#define mparser_advance          NOCH_PRIVATE(mparser_advance)
-#define mexpr_tok_to_op          NOCH_PRIVATE(mexpr_tok_to_op)
-#define mparser_parse_arith      NOCH_PRIVATE(mparser_parse_arith)
-#define mparser_parse_term       NOCH_PRIVATE(mparser_parse_term)
-#define mparser_parse_pow        NOCH_PRIVATE(mparser_parse_pow)
-#define mparser_parse_factor     NOCH_PRIVATE(mparser_parse_factor)
-#define mparser_parse_unary      NOCH_PRIVATE(mparser_parse_unary)
-#define mparser_parse_paren      NOCH_PRIVATE(mparser_parse_paren)
-#define mparser_parse_pipe       NOCH_PRIVATE(mparser_parse_pipe)
-#define mparser_parse_id         NOCH_PRIVATE(mparser_parse_id)
-#define mparser_parse_num        NOCH_PRIVATE(mparser_parse_num)
-#define mparser_expect_input_end NOCH_PRIVATE(mparser_expect_input_end)
-#define mparser_init             NOCH_PRIVATE(mparser_init)
-#define mparser_deinit           NOCH_PRIVATE(mparser_deinit)
-#define mparser_err              NOCH_PRIVATE(mparser_err)
-#define mparser_col              NOCH_PRIVATE(mparser_col)
-#define mexpr_fprint_float       NOCH_PRIVATE(mexpr_fprint_float)
-#define mexpr_mod                NOCH_PRIVATE(mexpr_mod)
-
-static char *mexpr_strdup(const char *str) {
-	char *duped;
-	NOCH_MUST_ALLOC(char, duped, strlen(str) + 1);
-
-	strcpy(duped, str);
-	return duped;
-}
+#define mexpr_new_num            NOCH_PRIV(mexpr_new_num)
+#define mexpr_new_unary          NOCH_PRIV(mexpr_new_unary)
+#define mexpr_new_binary         NOCH_PRIV(mexpr_new_binary)
+#define mexpr_new_id             NOCH_PRIV(mexpr_new_id)
+#define mexpr_new_fn             NOCH_PRIV(mexpr_new_fn)
+#define mexpr_tok_t              NOCH_PRIV(mexpr_tok_t)
+#define mparser_t                NOCH_PRIV(mparser_t)
+#define mparser_data_clear       NOCH_PRIV(mparser_data_clear)
+#define mparser_data_add         NOCH_PRIV(mparser_data_add)
+#define mparser_skip_ws          NOCH_PRIV(mparser_skip_ws)
+#define mparser_tok_start_here   NOCH_PRIV(mparser_tok_start_here)
+#define mparser_tok_single       NOCH_PRIV(mparser_tok_single)
+#define mparser_tok_num          NOCH_PRIV(mparser_tok_num)
+#define mparser_tok_id           NOCH_PRIV(mparser_tok_id)
+#define mparser_advance          NOCH_PRIV(mparser_advance)
+#define mexpr_tok_to_op          NOCH_PRIV(mexpr_tok_to_op)
+#define mparser_parse_arith      NOCH_PRIV(mparser_parse_arith)
+#define mparser_parse_term       NOCH_PRIV(mparser_parse_term)
+#define mparser_parse_pow        NOCH_PRIV(mparser_parse_pow)
+#define mparser_parse_factor     NOCH_PRIV(mparser_parse_factor)
+#define mparser_parse_unary      NOCH_PRIV(mparser_parse_unary)
+#define mparser_parse_paren      NOCH_PRIV(mparser_parse_paren)
+#define mparser_parse_pipe       NOCH_PRIV(mparser_parse_pipe)
+#define mparser_parse_id         NOCH_PRIV(mparser_parse_id)
+#define mparser_parse_num        NOCH_PRIV(mparser_parse_num)
+#define mparser_expect_input_end NOCH_PRIV(mparser_expect_input_end)
+#define mparser_init             NOCH_PRIV(mparser_init)
+#define mparser_deinit           NOCH_PRIV(mparser_deinit)
+#define mparser_err              NOCH_PRIV(mparser_err)
+#define mparser_col              NOCH_PRIV(mparser_col)
+#define mexpr_fprint_float       NOCH_PRIV(mexpr_fprint_float)
+#define mexpr_mod                NOCH_PRIV(mexpr_mod)
+#define mexpr_div                NOCH_PRIV(mexpr_div)
 
 #define MEXPR_ALLOC(TO, TYPE)         \
 	do {                              \
@@ -57,7 +49,7 @@ static char *mexpr_strdup(const char *str) {
 		memset(TO, 0, sizeof(TYPE));  \
 	} while (0)
 
-static mexpr_num_t *mexpr_new_num(double val) {
+static mexpr_num_t *NOCH_PRIV(mexpr_new_num)(double val) {
 	mexpr_num_t *num;
 	MEXPR_ALLOC(num, mexpr_num_t);
 	num->_.type = MEXPR_NUM;
@@ -66,7 +58,7 @@ static mexpr_num_t *mexpr_new_num(double val) {
 	return num;
 }
 
-static mexpr_unary_t *mexpr_new_unary(char op, mexpr_t *expr) {
+static mexpr_unary_t *NOCH_PRIV(mexpr_new_unary)(char op, mexpr_t *expr) {
 	mexpr_unary_t *un;
 	MEXPR_ALLOC(un, mexpr_unary_t);
 	un->_.type = MEXPR_UNARY;
@@ -76,7 +68,7 @@ static mexpr_unary_t *mexpr_new_unary(char op, mexpr_t *expr) {
 	return un;
 }
 
-static mexpr_binary_t *mexpr_new_binary(char op, mexpr_t *a, mexpr_t *b) {
+static mexpr_binary_t *NOCH_PRIV(mexpr_new_binary)(char op, mexpr_t *a, mexpr_t *b) {
 	mexpr_binary_t *bin;
 	MEXPR_ALLOC(bin, mexpr_binary_t);
 	bin->_.type = MEXPR_BINARY;
@@ -87,7 +79,7 @@ static mexpr_binary_t *mexpr_new_binary(char op, mexpr_t *a, mexpr_t *b) {
 	return bin;
 }
 
-static mexpr_id_t *mexpr_new_id(const char *val) {
+static mexpr_id_t *NOCH_PRIV(mexpr_new_id)(const char *val) {
 	mexpr_id_t *id;
 	MEXPR_ALLOC(id, mexpr_id_t);
 	id->_.type = MEXPR_ID;
@@ -97,7 +89,7 @@ static mexpr_id_t *mexpr_new_id(const char *val) {
 	return id;
 }
 
-static mexpr_fn_t *mexpr_new_fn(const char *name) {
+static mexpr_fn_t *NOCH_PRIV(mexpr_new_fn)(const char *name) {
 	mexpr_fn_t *fn;
 	MEXPR_ALLOC(fn, mexpr_fn_t);
 	fn->_.type = MEXPR_FN;
@@ -159,7 +151,7 @@ typedef enum {
 	MEXPR_TOK_DIV,
 	MEXPR_TOK_MOD,
 	MEXPR_TOK_POW,
-} mexpr_tok_t;
+} NOCH_PRIV(mexpr_tok_t);
 
 /* mexpr parser structure */
 typedef struct {
@@ -174,9 +166,9 @@ typedef struct {
 	size_t data_size;
 
 	size_t err_row, err_col;
-} mparser_t;
+} NOCH_PRIV(mparser_t);
 
-static void mparser_init(mparser_t *this, const char *in) {
+static void NOCH_PRIV(mparser_init)(mparser_t *this, const char *in) {
 	memset(this, 0, sizeof(*this));
 
 	this->in  = in;
@@ -188,23 +180,23 @@ static void mparser_init(mparser_t *this, const char *in) {
 #define MEXPR_STR(X)   __MEXPR_STR(X)
 #define __MEXPR_STR(X) #X
 
-inline static int mparser_err(mparser_t *this, const char *msg, size_t row, size_t col) {
+inline static int NOCH_PRIV(mparser_err)(mparser_t *this, const char *msg, size_t row, size_t col) {
 	this->err_row = row;
 	this->err_col = col;
 	NOCH_PARSER_ERR(msg);
 	return -1;
 }
 
-inline static size_t mparser_col(mparser_t *this) {
+inline static size_t NOCH_PRIV(mparser_col)(mparser_t *this) {
 	return this->it - this->bol + 1;
 }
 
-static void mparser_data_clear(mparser_t *this) {
+static void NOCH_PRIV(mparser_data_clear)(mparser_t *this) {
 	this->data[0]   = '\0';
 	this->data_size = 0;
 }
 
-static int mparser_data_add(mparser_t *this, char ch) {
+static int NOCH_PRIV(mparser_data_add)(mparser_t *this, char ch) {
 	if (this->data_size + 1 >= MEXPR_TOK_CAP)
 		return mparser_err(this, "Token exceeded maximum length of " MEXPR_STR(MEXPR_TOK_CAP - 1),
 		                   this->row, mparser_col(this));
@@ -214,12 +206,12 @@ static int mparser_data_add(mparser_t *this, char ch) {
 	return 0;
 }
 
-static void mparser_tok_start_here(mparser_t *this) {
+static void NOCH_PRIV(mparser_tok_start_here)(mparser_t *this) {
 	this->tok_row = this->row;
 	this->tok_col = mparser_col(this);
 }
 
-static int mparser_tok_single(mparser_t *this, mexpr_tok_t tok) {
+static int NOCH_PRIV(mparser_tok_single)(mparser_t *this, mexpr_tok_t tok) {
 	mparser_data_clear(this);
 	mparser_tok_start_here(this);
 	this->tok = tok;
@@ -228,7 +220,7 @@ static int mparser_tok_single(mparser_t *this, mexpr_tok_t tok) {
 	return 0;
 }
 
-static int mparser_tok_num(mparser_t *this) {
+static int NOCH_PRIV(mparser_tok_num)(mparser_t *this) {
 	NOCH_ASSERT(isdigit(*this->it));
 
 	mparser_data_clear(this);
@@ -278,7 +270,7 @@ static int mparser_tok_num(mparser_t *this) {
 	return 0;
 }
 
-static int mparser_tok_id(mparser_t *this) {
+static int NOCH_PRIV(mparser_tok_id)(mparser_t *this) {
 	NOCH_ASSERT(isalpha(*this->it));
 
 	mparser_data_clear(this);
@@ -295,7 +287,7 @@ static int mparser_tok_id(mparser_t *this) {
 	return 0;
 }
 
-static void mparser_skip_ws(mparser_t *this) {
+static void NOCH_PRIV(mparser_skip_ws)(mparser_t *this) {
 	this->prefixed_with_ws = false;
 
 	while (*this->it != '\0') {
@@ -314,7 +306,7 @@ static void mparser_skip_ws(mparser_t *this) {
 	}
 }
 
-static int mparser_advance(mparser_t *this) {
+static int NOCH_PRIV(mparser_advance)(mparser_t *this) {
 	mparser_skip_ws(this);
 
 	if (*this->it == '\0') {
@@ -348,7 +340,7 @@ static int mparser_advance(mparser_t *this) {
 	}
 }
 
-static char mexpr_tok_to_op(mexpr_tok_t tok) {
+static char NOCH_PRIV(mexpr_tok_to_op)(mexpr_tok_t tok) {
 	switch (tok) {
 	case MEXPR_TOK_ADD:  return '+';
 	case MEXPR_TOK_SUB:  return '-';
@@ -362,10 +354,10 @@ static char mexpr_tok_to_op(mexpr_tok_t tok) {
 	}
 }
 
-static mexpr_t *mparser_parse_factor(mparser_t *this);
-static mexpr_t *mparser_parse_arith (mparser_t *this);
+static mexpr_t *NOCH_PRIV(mparser_parse_factor)(mparser_t *this);
+static mexpr_t *NOCH_PRIV(mparser_parse_arith) (mparser_t *this);
 
-static mexpr_t *mparser_parse_pipe(mparser_t *this) {
+static mexpr_t *NOCH_PRIV(mparser_parse_pipe)(mparser_t *this) {
 	char op = mexpr_tok_to_op(this->tok);
 
 	if (mparser_advance(this) != 0)
@@ -389,7 +381,7 @@ static mexpr_t *mparser_parse_pipe(mparser_t *this) {
 	return (mexpr_t*)mexpr_new_unary(op, expr);
 }
 
-static mexpr_t *mparser_parse_paren(mparser_t *this) {
+static mexpr_t *NOCH_PRIV(mparser_parse_paren)(mparser_t *this) {
 	mexpr_tok_t end = this->tok + 1;
 
 	if (mparser_advance(this) != 0)
@@ -415,7 +407,7 @@ static mexpr_t *mparser_parse_paren(mparser_t *this) {
 	return expr;
 }
 
-static mexpr_t *mparser_parse_unary(mparser_t *this) {
+static mexpr_t *NOCH_PRIV(mparser_parse_unary)(mparser_t *this) {
 	char op = mexpr_tok_to_op(this->tok);
 
 	if (mparser_advance(this) != 0)
@@ -428,7 +420,7 @@ static mexpr_t *mparser_parse_unary(mparser_t *this) {
 	return (mexpr_t*)mexpr_new_unary(op, expr);
 }
 
-static mexpr_t *mparser_parse_num(mparser_t *this) {
+static mexpr_t *NOCH_PRIV(mparser_parse_num)(mparser_t *this) {
 	double num = atof(this->data);
 	if (mparser_advance(this) != 0)
 		return NULL;
@@ -436,21 +428,18 @@ static mexpr_t *mparser_parse_num(mparser_t *this) {
 	return (mexpr_t*)mexpr_new_num(num);
 }
 
-static mexpr_t *mparser_parse_id(mparser_t *this) {
-	char *name = mexpr_strdup(this->data);
-	if (mparser_advance(this) != 0) {
-		NOCH_FREE(name);
+static mexpr_t *NOCH_PRIV(mparser_parse_id)(mparser_t *this) {
+	char name[MEXPR_TOK_CAP];
+	strcpy(name, this->data);
+
+	if (mparser_advance(this) != 0)
 		return NULL;
-	}
 
 	if (this->tok == MEXPR_TOK_LPAREN) {
-		if (mparser_advance(this) != 0) {
-			NOCH_FREE(name);
+		if (mparser_advance(this) != 0)
 			return NULL;
-		}
 
 		mexpr_fn_t *fn = mexpr_new_fn(name);
-		NOCH_FREE(name);
 
 		while (true) {
 			if (fn->argc >= MEXPR_MAX_ARGS) {
@@ -481,14 +470,11 @@ static mexpr_t *mparser_parse_id(mparser_t *this) {
 		}
 
 		return (mexpr_t*)fn;
-	} else {
-		mexpr_id_t *id = mexpr_new_id(name);
-		NOCH_FREE(name);
-		return (mexpr_t*)id;
-	}
+	} else
+		return (mexpr_t*)mexpr_new_id(name);
 }
 
-static mexpr_t *mparser_parse_factor(mparser_t *this) {
+static mexpr_t *NOCH_PRIV(mparser_parse_factor)(mparser_t *this) {
 	if (this->it == this->in) {
 		if (mparser_advance(this) != 0)
 			return NULL;
@@ -512,7 +498,7 @@ static mexpr_t *mparser_parse_factor(mparser_t *this) {
 	return NULL;
 }
 
-static mexpr_t *mparser_parse_pow(mparser_t *this) {
+static mexpr_t *NOCH_PRIV(mparser_parse_pow)(mparser_t *this) {
 	mexpr_t *left = mparser_parse_factor(this);
 	if (left == NULL)
 		return NULL;
@@ -537,22 +523,25 @@ fail:
 	return NULL;
 }
 
-static bool mparser_at_implicit_mul(mparser_t *this) {
-	return !this->prefixed_with_ws &&
-	       (this->tok == MEXPR_TOK_LPAREN || this->tok == MEXPR_TOK_ID);
-}
-
-static mexpr_t *mparser_parse_term(mparser_t *this) {
+static mexpr_t *NOCH_PRIV(mparser_parse_term)(mparser_t *this) {
 	mexpr_t *left = mparser_parse_pow(this);
 	if (left == NULL)
 		return NULL;
 
-	while (this->tok == MEXPR_TOK_MUL || this->tok == MEXPR_TOK_DIV ||
-	       this->tok == MEXPR_TOK_MOD || mparser_at_implicit_mul(this)) {
+	while (this->tok == MEXPR_TOK_MUL || this->tok == MEXPR_TOK_DIV || this->tok == MEXPR_TOK_MOD ||
+	       this->tok == MEXPR_TOK_ID  || this->tok == MEXPR_TOK_LPAREN) {
 		char op;
-		if (mparser_at_implicit_mul(this))
+		if (this->tok == MEXPR_TOK_ID || this->tok == MEXPR_TOK_LPAREN) {
+			if (this->prefixed_with_ws) {
+				if (this->tok == MEXPR_TOK_ID && strcmp(this->data, "x") == 0) {
+					if (mparser_advance(this) != 0)
+						goto fail;
+				} else
+					break;
+			}
+
 			op = '*';
-		else {
+		} else {
 			op = mexpr_tok_to_op(this->tok);
 			if (mparser_advance(this) != 0)
 				goto fail;
@@ -572,7 +561,7 @@ fail:
 	return NULL;
 }
 
-static mexpr_t *mparser_parse_arith(mparser_t *this) {
+static mexpr_t *NOCH_PRIV(mparser_parse_arith)(mparser_t *this) {
 	mexpr_t *left = mparser_parse_term(this);
 	if (left == NULL)
 		return NULL;
@@ -597,9 +586,10 @@ fail:
 	return NULL;
 }
 
-static int mparser_expect_input_end(mparser_t *this) {
+static int NOCH_PRIV(mparser_expect_input_end)(mparser_t *this) {
 	if (this->tok != MEXPR_TOK_EOI)
-		return mparser_err(this, "Unexpected trailing token", this->tok_row, this->tok_col);
+		return mparser_err(this, "Expected an operator between tokens",
+		                   this->tok_row, this->tok_col);
 
 	return 0;
 }
@@ -623,14 +613,14 @@ NOCH_DEF mexpr_t *mexpr_parse(const char *in, size_t *row, size_t *col) {
 	return expr;
 }
 
-static mctx_result_t mexpr_div(double a, double b) {
+static mctx_result_t NOCH_PRIV(mexpr_div)(double a, double b) {
 	if (b == 0)
 		return mctx_err("0", "Division by zero");
 
 	return mctx_ok(a / b);
 }
 
-static mctx_result_t mexpr_mod(double a, double b) {
+static mctx_result_t NOCH_PRIV(mexpr_mod)(double a, double b) {
 	if (b == 0)
 		return mctx_err("0", "Division by zero");
 
@@ -733,7 +723,7 @@ NOCH_DEF mctx_result_t mctx_eval(mctx_t *this, mexpr_t *expr) {
 
 #undef MCTX_MUST_EVAL
 
-static void mexpr_fprint_float(double num, FILE *file) {
+static void NOCH_PRIV(mexpr_fprint_float)(double num, FILE *file) {
 	char buf[256];
 	snprintf(buf, sizeof(buf), "%.13f", num);
 
@@ -833,6 +823,14 @@ NOCH_DEF void mctx_deinit(mctx_t *this) {
 }
 
 NOCH_DEF void mctx_register_fn(mctx_t *this, const char *name, mctx_native_t fn) {
+	for (size_t i = 0; i < this->fns_count; ++ i) {
+		if (strcmp(this->fns[i].name, name) == 0) {
+			this->fns[i].name = name;
+			this->fns[i].fn   = fn;
+			return;
+		}
+	}
+
 	if (this->fns_count >= this->fns_cap) {
 		this->fns_cap *= 2;
 		NOCH_MUST_REALLOC(mctx_fn_t, this->fns, this->fns_cap);
@@ -843,6 +841,14 @@ NOCH_DEF void mctx_register_fn(mctx_t *this, const char *name, mctx_native_t fn)
 }
 
 NOCH_DEF void mctx_register_const(mctx_t *this, const char *name, double val) {
+	for (size_t i = 0; i < this->consts_count; ++ i) {
+		if (strcmp(this->consts[i].name, name) == 0) {
+			this->consts[i].name = name;
+			this->consts[i].val  = val;
+			return;
+		}
+	}
+
 	if (this->consts_count >= this->consts_cap) {
 		this->consts_cap *= 2;
 		NOCH_MUST_REALLOC(mctx_const_t, this->consts, this->consts_cap);
@@ -900,7 +906,6 @@ NOCH_DEF void mctx_register_basic_fns(mctx_t *this) {
 	mctx_register_fn(this, "atan2", mctx_fn_atan2);
 }
 
-#undef mexpr_strdup
 #undef mexpr_new_num
 #undef mexpr_new_unary
 #undef mexpr_new_binary
@@ -932,6 +937,7 @@ NOCH_DEF void mctx_register_basic_fns(mctx_t *this) {
 #undef mparser_col
 #undef mexpr_fprint_float
 #undef mexpr_mod
+#undef mexpr_div
 
 #ifdef __cplusplus
 }

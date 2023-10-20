@@ -7,7 +7,7 @@ extern "C" {
 
 #include "utf8.h"
 
-#define u8_rune_size_map NOCH_PRIVATE(u8_rune_size_map)
+#define u8_rune_size_map NOCH_PRIV(u8_rune_size_map)
 
 static uint8_t u8_rune_size_map[256] = {
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

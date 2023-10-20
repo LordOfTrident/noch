@@ -6,26 +6,26 @@ extern "C" {
 
 #include "log.h"
 
-#define log_file           NOCH_PRIVATE(log_file)
-#define log_flags          NOCH_PRIVATE(log_flags)
-#define log_is_init        NOCH_PRIVATE(log_is_init)
-#define log_color_to_attr  NOCH_PRIVATE(log_color_to_attr)
-#define log_stdout_handle  NOCH_PRIVATE(log_stdout_handle)
-#define log_stderr_handle  NOCH_PRIVATE(log_stderr_handle)
-#define log_prev_csbi      NOCH_PRIVATE(log_prev_csbi)
-#define log_file_to_handle NOCH_PRIVATE(log_file_to_handle)
-#define log_color_to_ansi  NOCH_PRIVATE(log_color_to_ansi)
-#define log_has_color      NOCH_PRIVATE(log_has_color)
-#define init_log           NOCH_PRIVATE(init_log)
-#define log_reset_color    NOCH_PRIVATE(log_reset_color)
+#define log_file           NOCH_PRIV(log_file)
+#define log_flags          NOCH_PRIV(log_flags)
+#define log_is_init        NOCH_PRIV(log_is_init)
+#define log_color_to_attr  NOCH_PRIV(log_color_to_attr)
+#define log_stdout_handle  NOCH_PRIV(log_stdout_handle)
+#define log_stderr_handle  NOCH_PRIV(log_stderr_handle)
+#define log_prev_csbi      NOCH_PRIV(log_prev_csbi)
+#define log_file_to_handle NOCH_PRIV(log_file_to_handle)
+#define log_color_to_ansi  NOCH_PRIV(log_color_to_ansi)
+#define log_has_color      NOCH_PRIV(log_has_color)
+#define init_log           NOCH_PRIV(init_log)
+#define log_reset_color    NOCH_PRIV(log_reset_color)
 
-static FILE *log_file    = NULL;
-static int   log_flags   = LOG_BASIC;
-static bool  log_is_init = false;
+static FILE *NOCH_PRIV(log_file)    = NULL;
+static int   NOCH_PRIV(log_flags)   = LOG_BASIC;
+static bool  NOCH_PRIV(log_is_init) = false;
 
 #ifdef PLATFORM_WINDOWS
 
-static WORD log_color_to_attr[] = {
+static WORD NOCH_PRIV(log_color_to_attr)[] = {
 	0,
 	/* LOG_RED     */ FOREGROUND_RED | FOREGROUND_INTENSITY,
 	/* LOG_GREEN   */ FOREGROUND_GREEN | FOREGROUND_INTENSITY,
@@ -36,12 +36,12 @@ static WORD log_color_to_attr[] = {
 	/* LOG_WHITE   */ FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
 };
 
-static HANDLE log_stdout_handle;
-static HANDLE log_stderr_handle;
+static HANDLE NOCH_PRIV(log_stdout_handle);
+static HANDLE NOCH_PRIV(log_stderr_handle);
 
-static CONSOLE_SCREEN_BUFFER_INFO log_prev_csbi;
+static CONSOLE_SCREEN_BUFFER_INFO NOCH_PRIV(log_prev_csbi);
 
-static HANDLE log_file_to_handle(void) {
+static HANDLE NOCH_PRIV(log_file_to_handle)(void) {
 	if (log_file == stdout)
 		return log_stdout_handle;
 	else if (log_file == stderr)
@@ -52,7 +52,7 @@ static HANDLE log_file_to_handle(void) {
 
 #else
 
-static const char *log_color_to_ansi[] = {
+static const char *NOCH_PRIV(log_color_to_ansi)[] = {
 	0,
 	/* LOG_RED     */ "\x1b[1;31m",
 	/* LOG_GREEN   */ "\x1b[1;32m",
@@ -65,11 +65,11 @@ static const char *log_color_to_ansi[] = {
 
 #endif
 
-static bool log_has_color(void) {
+static bool NOCH_PRIV(log_has_color)(void) {
 	return log_file == stdout || log_file == stderr;
 }
 
-static void init_log(void) {
+static void NOCH_PRIV(init_log)(void) {
 	log_is_init = true;
 
 #ifdef PLATFORM_WINDOWS
@@ -91,7 +91,7 @@ NOCH_DEF void set_log_flags(int flags) {
 	log_flags = flags;
 }
 
-static void log_reset_color(void) {
+static void NOCH_PRIV(log_reset_color)(void) {
 	if (log_has_color())
 #ifdef PLATFORM_WINDOWS
 		SetConsoleTextAttribute(log_file_to_handle(), log_prev_csbi.wAttributes);

@@ -9,19 +9,19 @@ extern "C" {
 
 #include "args.h"
 
-#define flag_type_t            NOCH_PRIVATE(flag_type_t)
-#define flag_t                 NOCH_PRIVATE(flag_t)
-#define flags                  NOCH_PRIVATE(flags)
-#define flags_count            NOCH_PRIVATE(flags_count)
-#define flag_get_by_short_name NOCH_PRIVATE(flag_get_by_short_name)
-#define flag_get_by_long_name  NOCH_PRIVATE(flag_get_by_long_name)
-#define arg_to_char            NOCH_PRIVATE(arg_to_char)
-#define arg_to_int             NOCH_PRIVATE(arg_to_int)
-#define arg_to_size            NOCH_PRIVATE(arg_to_size)
-#define arg_to_num             NOCH_PRIVATE(arg_to_num)
-#define arg_equals_ci          NOCH_PRIVATE(arg_equals_ci)
-#define arg_to_bool            NOCH_PRIVATE(arg_to_bool)
-#define flag_set_from_arg      NOCH_PRIVATE(flag_set_from_arg)
+#define flag_type_t            NOCH_PRIV(flag_type_t)
+#define flag_t                 NOCH_PRIV(flag_t)
+#define flags                  NOCH_PRIV(flags)
+#define flags_count            NOCH_PRIV(flags_count)
+#define flag_get_by_short_name NOCH_PRIV(flag_get_by_short_name)
+#define flag_get_by_long_name  NOCH_PRIV(flag_get_by_long_name)
+#define arg_to_char            NOCH_PRIV(arg_to_char)
+#define arg_to_int             NOCH_PRIV(arg_to_int)
+#define arg_to_size            NOCH_PRIV(arg_to_size)
+#define arg_to_num             NOCH_PRIV(arg_to_num)
+#define arg_equals_ci          NOCH_PRIV(arg_equals_ci)
+#define arg_to_bool            NOCH_PRIV(arg_to_bool)
+#define flag_set_from_arg      NOCH_PRIV(flag_set_from_arg)
 
 NOCH_DEF bool arg_is_flag(const char *arg) {
 	NOCH_ASSERT(arg != NULL);
@@ -56,7 +56,7 @@ typedef enum {
 	FLAG_BOOL,
 
 	FLAG_TYPE_COUNT,
-} flag_type_t;
+} NOCH_PRIV(flag_type_t);
 
 typedef struct {
 	flag_type_t type;
@@ -80,12 +80,12 @@ typedef struct {
 	} default_val;
 
 	const char *short_name, *long_name, *desc;
-} flag_t;
+} NOCH_PRIV(flag_t);
 
 flag_t flags[FLAGS_CAPACITY];
 size_t flags_count = 0;
 
-static flag_t *flag_get_by_short_name(const char *short_name) {
+static flag_t *NOCH_PRIV(flag_get_by_short_name)(const char *short_name) {
 	if (short_name == NULL)
 		return NULL;
 
@@ -100,7 +100,7 @@ static flag_t *flag_get_by_short_name(const char *short_name) {
 	return NULL;
 }
 
-static flag_t *flag_get_by_long_name(const char *long_name) {
+static flag_t *NOCH_PRIV(flag_get_by_long_name)(const char *long_name) {
 	if (long_name == NULL)
 		return NULL;
 
@@ -115,7 +115,7 @@ static flag_t *flag_get_by_long_name(const char *long_name) {
 	return NULL;
 }
 
-static int arg_to_char(const char *arg, char *var) {
+static int NOCH_PRIV(arg_to_char)(const char *arg, char *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -126,7 +126,7 @@ static int arg_to_char(const char *arg, char *var) {
 	return 0;
 }
 
-static int arg_to_int(const char *arg, int *var) {
+static int NOCH_PRIV(arg_to_int)(const char *arg, int *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -135,7 +135,7 @@ static int arg_to_int(const char *arg, int *var) {
 	return *ptr == '\0'? 0 : -1;
 }
 
-static int arg_to_size(const char *arg, size_t *var) {
+static int NOCH_PRIV(arg_to_size)(const char *arg, size_t *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -144,7 +144,7 @@ static int arg_to_size(const char *arg, size_t *var) {
 	return *ptr == '\0'? 0 : -1;
 }
 
-static int arg_to_num(const char *arg, double *var) {
+static int NOCH_PRIV(arg_to_num)(const char *arg, double *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -154,7 +154,7 @@ static int arg_to_num(const char *arg, double *var) {
 }
 
 /* Case insensitive equality function */
-static bool arg_equals_ci(const char *a, const char *b) {
+static bool NOCH_PRIV(arg_equals_ci)(const char *a, const char *b) {
 	size_t len = strlen(a);
 	if (len != strlen(b))
 		return -1;
@@ -173,7 +173,7 @@ static bool arg_equals_ci(const char *a, const char *b) {
 	 arg_equals_ci(STR, C) ||            \
 	 arg_equals_ci(STR, D))
 
-static int arg_to_bool(const char *arg, bool *var) {
+static int NOCH_PRIV(arg_to_bool)(const char *arg, bool *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -190,7 +190,7 @@ static int arg_to_bool(const char *arg, bool *var) {
 #undef ARG_EQUALS_CI_4
 
 /* Set the flags value from an arg. Type is automatically assumed from the flag type */
-static int flag_set_from_arg(flag_t *flag, const char *arg) {
+static int NOCH_PRIV(flag_set_from_arg)(flag_t *flag, const char *arg) {
 	NOCH_ASSERT(flag != NULL);
 	NOCH_ASSERT(arg  != NULL);
 
