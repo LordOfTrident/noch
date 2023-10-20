@@ -877,6 +877,8 @@ BIND_MCTX_NATIVE(mctx_fn_ceil,  ceil,  1, args[0])
 BIND_MCTX_NATIVE(mctx_fn_round, round, 1, args[0])
 BIND_MCTX_NATIVE(mctx_fn_atan,  atan,  1, args[0])
 BIND_MCTX_NATIVE(mctx_fn_atan2, atan2, 2, args[0], args[1])
+BIND_MCTX_NATIVE(mctx_fn_abs,   fabs,  1, args[0])
+BIND_MCTX_NATIVE(mctx_fn_pow,   pow,   2, args[0], args[1])
 
 NOCH_DEF mctx_result_t mctx_fn_root(double *args, size_t argc) {
 	if (argc != 2)
@@ -886,6 +888,14 @@ NOCH_DEF mctx_result_t mctx_fn_root(double *args, size_t argc) {
 		return MCTX_DIV_BY_ZERO;
 
 	return mctx_ok(pow(args[0], 1 / args[1]));
+}
+
+NOCH_DEF mctx_result_t mctx_fn_sum(double *args, size_t argc) {
+	double sum = 0;
+	for (size_t i = 0; i < argc; ++ i)
+		sum += args[i];
+
+	return mctx_ok(sum);
 }
 
 #undef BIND_MCTX_NATIVE
@@ -904,6 +914,9 @@ NOCH_DEF void mctx_register_basic_fns(mctx_t *this) {
 	mctx_register_fn(this, "root",  mctx_fn_root);
 	mctx_register_fn(this, "atan",  mctx_fn_atan);
 	mctx_register_fn(this, "atan2", mctx_fn_atan2);
+	mctx_register_fn(this, "abs",   mctx_fn_abs);
+	mctx_register_fn(this, "pow",   mctx_fn_pow);
+	mctx_register_fn(this, "sum",   mctx_fn_sum);
 }
 
 #undef mexpr_new_num

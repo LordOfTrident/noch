@@ -148,6 +148,9 @@ DECL_MCTX_NATIVE(mctx_fn_round);
 DECL_MCTX_NATIVE(mctx_fn_atan);
 DECL_MCTX_NATIVE(mctx_fn_atan2);
 DECL_MCTX_NATIVE(mctx_fn_root);
+DECL_MCTX_NATIVE(mctx_fn_abs);
+DECL_MCTX_NATIVE(mctx_fn_pow);
+DECL_MCTX_NATIVE(mctx_fn_sum);
 
 NOCH_DEF void mctx_register_basic_fns(mctx_t *this);
 
