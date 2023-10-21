@@ -11,8 +11,8 @@ extern "C" {
 
 #define hmap_find NOCH_PRIV(hmap_find)
 
-#define HMAPE_SIZE(THIS)   (sizeof(hmape_t) + (THIS)->valsz)
-#define HMAPE_VAL(THIS, E) (void*)((char*)(E) + sizeof(hmape_t))
+#define HMAP_ELEM_SIZE(THIS)   (sizeof(hmap_elem_t) + (THIS)->valsz)
+#define HMAP_ELEM_VAL(THIS, E) (void*)((char*)(E) + sizeof(hmap_elem_t))
 
 NOCH_DEF void hmap_init(hmap_t *this, size_t cap, size_t valsz,
                         hmap_hash_t hash, hmap_free_t free) {
@@ -20,25 +20,25 @@ NOCH_DEF void hmap_init(hmap_t *this, size_t cap, size_t valsz,
 	this->valsz = valsz;
 	this->hash  = hash;
 	this->free  = free;
-	this->buf   = NOCH_ALLOC(this->cap * HMAPE_SIZE(this));
+	this->buf   = NOCH_ALLOC(this->cap * HMAP_ELEM_SIZE(this));
 	if (this->buf == NULL)
 		NOCH_ALLOC_FAIL();
 
-	memset(this->buf, 0, this->cap * HMAPE_SIZE(this));
+	memset(this->buf, 0, this->cap * HMAP_ELEM_SIZE(this));
 }
 
 NOCH_DEF void hmap_deinit(hmap_t *this) {
 	if (this->free != NULL) {
 		for (size_t i = 0; i < this->cap; ++ i) {
 			if (this->buf[i].full)
-				this->free(HMAPE_VAL(this, &this->buf[i]));
+				this->free(HMAP_ELEM_VAL(this, &this->buf[i]));
 		}
 	}
 
 	NOCH_FREE(this->buf);
 }
 
-static hmape_t *NOCH_PRIV(hmap_find)(hmap_t *this, const char *key) {
+static hmap_elem_t *NOCH_PRIV(hmap_find)(hmap_t *this, const char *key) {
 	unsigned hash = this->hash(key);
 	size_t   idx  = hash % this->cap;
 
@@ -65,7 +65,7 @@ static hmape_t *NOCH_PRIV(hmap_find)(hmap_t *this, const char *key) {
 }
 
 NOCH_DEF int hmap_remove(hmap_t *this, const char *key) {
-	hmape_t *e = hmap_find(this, key);
+	hmap_elem_t *e = hmap_find(this, key);
 	if (e == NULL)
 		return -1;
 
@@ -73,17 +73,17 @@ NOCH_DEF int hmap_remove(hmap_t *this, const char *key) {
 	e->full = false;
 
 	if (this->free != NULL)
-		this->free(HMAPE_VAL(this, e));
+		this->free(HMAP_ELEM_VAL(this, e));
 
 	return 0;
 }
 
 NOCH_DEF void *hmap_get(hmap_t *this, const char *key) {
-	hmape_t *e = hmap_find(this, key);
+	hmap_elem_t *e = hmap_find(this, key);
 	if (e == NULL)
 		return NULL;
 
-	return HMAPE_VAL(this, e);
+	return HMAP_ELEM_VAL(this, e);
 }
 
 NOCH_DEF void hmap_set(hmap_t *this, const char *key, void *val) {
@@ -104,18 +104,18 @@ NOCH_DEF void hmap_set(hmap_t *this, const char *key, void *val) {
 		}
 
 		if (!found) {
-			size_t   prev_cap = this->cap;
-			hmape_t *prev_buf = this->buf;
+			size_t       prev_cap = this->cap;
+			hmap_elem_t *prev_buf = this->buf;
 
 			this->cap *= 2;
-			this->buf  = NOCH_ALLOC(this->cap * HMAPE_SIZE(this));
+			this->buf  = NOCH_ALLOC(this->cap * HMAP_ELEM_SIZE(this));
 			if (this->buf == NULL)
 				NOCH_ALLOC_FAIL();
 
-			memset(this->buf, 0, this->cap * HMAPE_SIZE(this));
+			memset(this->buf, 0, this->cap * HMAP_ELEM_SIZE(this));
 
 			for (size_t i = 0; i < prev_cap; ++ i)
-				hmap_set(this, prev_buf[i].key, HMAPE_VAL(this, &prev_buf[i]));
+				hmap_set(this, prev_buf[i].key, HMAP_ELEM_VAL(this, &prev_buf[i]));
 
 			NOCH_FREE(prev_buf);
 			hmap_set(this, key, val);
@@ -126,15 +126,15 @@ NOCH_DEF void hmap_set(hmap_t *this, const char *key, void *val) {
 	if (!this->buf[idx].full)
 		this->buf[idx].full = true;
 	else if (this->free != NULL)
-		this->free(HMAPE_VAL(this, &this->buf[idx]));
+		this->free(HMAP_ELEM_VAL(this, &this->buf[idx]));
 
 	this->buf[idx].key  = key;
 	this->buf[idx].hash = hash;
-	memcpy(HMAPE_VAL(this, &this->buf[idx]), val, this->valsz);
+	memcpy(HMAP_ELEM_VAL(this, &this->buf[idx]), val, this->valsz);
 }
 
-#undef HMAPE_SIZE
-#undef HMAPE_VAL
+#undef HMAP_ELEM_SIZE
+#undef HMAP_ELEM_VAL
 
 NOCH_DEF unsigned default_hash(const char *str) {
 	unsigned hash = 5381;

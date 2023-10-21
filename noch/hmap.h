@@ -24,16 +24,16 @@ typedef struct {
 	const char *key;
 	unsigned    hash;
 	bool        full;
-} hmape_t;
+} hmap_elem_t;
 
 typedef unsigned (*hmap_hash_t)(const char*);
 typedef void     (*hmap_free_t)(void*);
 
 typedef struct {
-	size_t      cap, valsz;
-	hmape_t    *buf;
-	hmap_hash_t hash;
-	hmap_free_t free;
+	size_t       cap, valsz;
+	hmap_elem_t *buf;
+	hmap_hash_t  hash;
+	hmap_free_t  free;
 } hmap_t;
 
 #define HMAP_T(T) \

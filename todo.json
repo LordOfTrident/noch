@@ -1,127 +1,127 @@
 [
 	{
 		"type": "task",
-		"title": "`common`   - Common C functionalities",
+		"title": "`common`    - Common C functionalities",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`args`     - Command line arguments/flags parser",
+		"title": "`args`      - Command line arguments/flags parser",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`attrs`    - C attribute macros",
+		"title": "`attrs`     - C attribute macros",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`colorer`  - Colored terminal output",
+		"title": "`colorer`   - Colored terminal output",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`json`     - JSON parser",
+		"title": "`json`      - JSON parser",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`log`      - Logging functions",
+		"title": "`log`       - Logging functions",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`platform` - Platform macros",
+		"title": "`platform`  - Platform macros",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`sv`       - String view",
+		"title": "`sv`        - String view",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`utf8`     - UTF8 handling functions",
+		"title": "`utf8`      - UTF8 handling functions",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`unix`     - Include this instead of <unistd.h>",
+		"title": "`unix`      - Include this instead of <unistd.h>",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`win`      - Include this instead of <windows.h>",
+		"title": "`win`       - Include this instead of <windows.h>",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`darray`   - Dynamic array",
+		"title": "`darray`    - Dynamic array",
 		"desc": null,
 		"done": false
 	},
 	{
 		"type": "task",
-		"title": "`hmap`     - Hash map",
+		"title": "`hmap`      - Hash map",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`dstring`  - Dynamic string",
+		"title": "`dstring`   - Dynamic string",
 		"desc": null,
 		"done": false
 	},
 	{
 		"type": "task",
-		"title": "`fs`       - Filesystem",
+		"title": "`fs`        - Filesystem",
 		"desc": null,
 		"done": false
 	},
 	{
 		"type": "task",
-		"title": "`builder`  - C project builder",
+		"title": "`builder`   - C project builder",
 		"desc": null,
 		"done": false
 	},
 	{
 		"type": "task",
-		"title": "`bytes`    - Byte manipulation functions",
+		"title": "`bytes`     - Byte manipulation functions",
 		"desc": null,
 		"done": false
 	},
 	{
 		"type": "task",
-		"title": "`region`   - Region allocator",
+		"title": "`region`    - Region allocator",
 		"desc": null,
 		"done": false
 	},
 	{
 		"type": "task",
-		"title": "`mexpr`    - Math expression parser/evaluator",
+		"title": "`math_expr` - Math expression parser/evaluator",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`ini`      - INI parser",
+		"title": "`ini`       - INI parser",
 		"desc": null,
 		"done": false
 	},
 	{
 		"type": "task",
-		"title": "`math`     - Useful math stuff",
+		"title": "`math`      - Useful math stuff",
 		"desc": null,
 		"done": false
 	}

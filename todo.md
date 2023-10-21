@@ -1,22 +1,22 @@
 # TODO (61% done)
-- [X] `common`   - Common C functionalities
-- [X] `args`     - Command line arguments/flags parser
-- [X] `attrs`    - C attribute macros
-- [X] `colorer`  - Colored terminal output
-- [X] `json`     - JSON parser
-- [X] `log`      - Logging functions
-- [X] `platform` - Platform macros
-- [X] `sv`       - String view
-- [X] `utf8`     - UTF8 handling functions
-- [X] `unix`     - Include this instead of <unistd.h>
-- [X] `win`      - Include this instead of <windows.h>
-- [ ] `darray`   - Dynamic array
-- [X] `hmap`     - Hash map
-- [ ] `dstring`  - Dynamic string
-- [ ] `fs`       - Filesystem
-- [ ] `builder`  - C project builder
-- [ ] `bytes`    - Byte manipulation functions
-- [ ] `region`   - Region allocator
-- [X] `mexpr`    - Math expression parser/evaluator
-- [ ] `ini`      - INI parser
-- [ ] `math`     - Useful math stuff
+- [X] `common`    - Common C functionalities
+- [X] `args`      - Command line arguments/flags parser
+- [X] `attrs`     - C attribute macros
+- [X] `colorer`   - Colored terminal output
+- [X] `json`      - JSON parser
+- [X] `log`       - Logging functions
+- [X] `platform`  - Platform macros
+- [X] `sv`        - String view
+- [X] `utf8`      - UTF8 handling functions
+- [X] `unix`      - Include this instead of <unistd.h>
+- [X] `win`       - Include this instead of <windows.h>
+- [ ] `darray`    - Dynamic array
+- [X] `hmap`      - Hash map
+- [ ] `dstring`   - Dynamic string
+- [ ] `fs`        - Filesystem
+- [ ] `builder`   - C project builder
+- [ ] `bytes`     - Byte manipulation functions
+- [ ] `region`    - Region allocator
+- [X] `math_expr` - Math expression parser/evaluator
+- [ ] `ini`       - INI parser
+- [ ] `math`      - Useful math stuff
