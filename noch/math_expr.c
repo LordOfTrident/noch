@@ -772,7 +772,6 @@ static void NOCH_PRIV(me_fprint_float)(double num, FILE *file) {
 	fprintf(file, "%s", buf);
 }
 
-/* TODO: Do not print redundant paranthesis */
 NOCH_DEF void me_expr_fprint(me_expr_t *this, FILE *file) {
 	if (this->parens)
 		fprintf(file, "(");
