@@ -12,6 +12,7 @@ extern "C" {
 #include <string.h> /* strcmp, memset, memcpy, strlen, strcpy */
 #include <ctype.h>  /* isspace, isdigit, isalnum, isalpha */
 #include <stdlib.h> /* atof */
+#include <stdarg.h> /* va_list, va_start, va_end, vsnprintf */
 #include <math.h>   /* pow, floor */
 
 #include "internal/def.h"
