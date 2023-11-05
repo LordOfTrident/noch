@@ -10,8 +10,8 @@ int main(int argc, char **argv) {
 	printf("String: '%s'\n", str_buf);
 	printf("Buffer length: '%i'\n", (int)ARRAY_LEN(str_buf));
 
-	char *dup = xstrdup(str_buf);
+	char *dup = stringDup(str_buf);
 	printf("Copied to heap: '%s'\n", dup);
 
-	TODO("ZERO_STRUCT example");
+	TODO("zeroInit example");
 }

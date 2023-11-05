@@ -8,24 +8,13 @@ int main(void) {
 	const char *path = "examples/json/data.json";
 	printf("Reading '%s'\n", path);
 
-	size_t row, col;
-	json_obj_t *obj;
-	JSON_EXPECT_OBJ(obj, json_from_file(path, &row, &col), {
-		fprintf(stderr, "Error: %s: Expected data to be an object, got %s\n",
-		        path, json_type_to_str(_recieved_json->type));
-		return EXIT_FAILURE;
-	});
-
-	if (obj == NULL) {
-		if (noch_get_err() == NOCH_ERR_PARSER)
-			fprintf(stderr, "Error: %s:%i:%i: %s\n", path, (int)row, (int)col, noch_get_err_msg());
-		else
-			fprintf(stderr, "Error: %s: %s\n", path, noch_get_err_msg());
-
+	Json *json = jsonFromFile(path);
+	if (json == NULL) {
+		fprintf(stderr, "Error: %s\n", nochGetError());
 		return EXIT_FAILURE;
 	}
 
-	JSON_FPRINT(obj, stdout);
-	JSON_DESTROY(obj);
+	jsonPrintF(json, stdout);
+	jsonDestroy(json);
 	return 0;
 }

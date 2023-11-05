@@ -4,32 +4,32 @@
 #include <noch/utf8.c>
 
 int main(void) {
-	const char *str = "hello π \uE0B3 lol";
+	const char *str = "hello π \u2588 lol";
 
-	printf("Length: %i\n", (int)u8_str_len(str));
-	printf("Bytes: %i\n",  (int)u8_str_bytes(str));
+	printf("Length: %i\n", (int)stringU8Length(str));
+	printf("Bytes: %i\n",  (int)stringU8Size(str));
 
 	printf("Normal printing:\n\t");
 
 	const char *it = str;
 	while (*it != '\0') {
 		size_t size;
-		rune_t r = rune_decode_u8(it, &size);
+		Rune   rune = runeFromU8(it, &size);
 		it += size;
 
-		char buf[sizeof(rune_t) + 1] = {0};
-		rune_encode_u8(r, buf);
+		char buf[sizeof(Rune) + 1] = {0};
+		runeToU8(rune, buf);
 		printf("%s", buf);
 	}
 
 	printf("\nReverse printing:\n\t");
 
-	it = str + u8_str_bytes(str);
-	while ((it = u8_str_prev(it, str)) != NULL) {
-		rune_t r = rune_decode_u8(it, NULL);
+	it = str + stringU8Size(str);
+	while ((it = stringU8Prev(it, str)) != NULL) {
+		Rune rune = runeFromU8(it, NULL);
 
-		char buf[sizeof(rune_t) + 1] = {0};
-		rune_encode_u8(r, buf);
+		char buf[sizeof(Rune) + 1] = {0};
+		runeToU8(rune, buf);
 		printf("%s", buf);
 	}
 

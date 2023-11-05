@@ -2,27 +2,25 @@
 #include <noch/json.c>
 
 int main(void) {
-	json_obj_t *json = json_new_obj();
+	JsonObj *json = jsonNewObj();
 	assert(json != NULL);
 
-#define MUST(X) assert((X) == 0)
+	jsonObjSet(json, "key",      jsonNewString("value"));
+	jsonObjSet(json, "pi",       jsonNewFloat(3.1415926535));
+	jsonObjSet(json, "my-int",   jsonNewInt(1024));
+	jsonObjSet(json, "my-float", jsonNewFloat(5.0));
 
-	MUST(JSON_OBJ_ADD(json, "key",      json_new_str("value")));
-	MUST(JSON_OBJ_ADD(json, "pi",       json_new_float(3.1415926535)));
-	MUST(JSON_OBJ_ADD(json, "my-int",   json_new_int(1024)));
-	MUST(JSON_OBJ_ADD(json, "my-float", json_new_float(5.0)));
-
-	json_list_t *fruits = json_new_list();
+	JsonList *fruits = jsonNewList();
 	assert(fruits != NULL);
 
-	MUST(JSON_LIST_ADD(fruits, json_new_str("apple")));
-	MUST(JSON_LIST_ADD(fruits, json_new_str("orange")));
-	MUST(JSON_LIST_ADD(fruits, json_new_str("banana")));
-	MUST(JSON_LIST_ADD(fruits, json_new_str("pear")));
+	jsonListPush(fruits, jsonNewString("apple"));
+	jsonListPush(fruits, jsonNewString("orange"));
+	jsonListPush(fruits, jsonNewString("banana"));
+	jsonListPush(fruits, jsonNewString("pear"));
 
-	MUST(JSON_OBJ_ADD(json, "fruits", (json_t*)fruits));
+	jsonObjSet(json, "fruits", (Json*)fruits);
 
-	JSON_FPRINT(json, stdout);
-	JSON_DESTROY(json);
+	jsonPrintF(json, stdout);
+	jsonDestroy(json);
 	return 0;
 }

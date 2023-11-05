@@ -1,6 +1,6 @@
 CFLAGS = -O2 -std=c99 -Wall -Wextra -Werror -pedantic -Wno-deprecated-declarations -g -I./
 
-examples: utf8 json args colorer log common sv hmap math_expr
+examples: utf8 json args colorer log common sv hashmap mathexpr
 
 bin:
 	mkdir -p bin
@@ -30,15 +30,14 @@ sv: bin
 	$(CC) examples/sv/find.c $(CFLAGS) -o bin/sv_find
 	$(CC) examples/sv/trim.c $(CFLAGS) -o bin/sv_trim
 
-hmap: bin
-	$(CC) examples/hmap/hmap.c $(CFLAGS) -o bin/hmap
+hashmap: bin
+	$(CC) examples/hashmap/hashmap.c $(CFLAGS) -o bin/hashmap
 
-math_expr: bin
-	$(CC) examples/math_expr/expr.c $(CFLAGS) -o bin/expr -lm
-	$(CC) examples/math_expr/stmt.c $(CFLAGS) -o bin/stmt -lm
+mathexpr: bin
+	$(CC) examples/mathexpr/expr.c $(CFLAGS) -o bin/expr -lm
 
 clean: bin
 	rm bin/*
 
 all:
-	@echo examples, utf8, json, args, colorer, log, common, sv, hmap, math_expr, clean
+	@echo examples, utf8, json, args, colorer, log, common, sv, hashmap, mathexpr, clean

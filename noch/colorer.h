@@ -4,19 +4,18 @@
 extern "C" {
 #endif
 
-#ifndef __cplusplus
-#	include <stdbool.h> /* bool, true, false */
-#endif
-
-#include <stdio.h>  /* stdout, stderr, fputs, fputc */
-#include <stdarg.h> /* va_list, va_start, va_end, vsnprintf */
+#include <stdio.h>   /* stdout, stderr, fprintf */
+#include <stdarg.h>  /* va_list, va_start, va_end, vsnprintf */
+#include <stdbool.h> /* bool, true, false */
 
 #include "internal/def.h"
 #include "platform.h"
 
 #ifdef PLATFORM_WINDOWS
-#	include "win.h"
+#	include "windows.h"
 #endif
+
+/* TODO: Support enabling ansi escape sequences on windows */
 
 enum {
 	COLOR_BLACK = 0,
@@ -38,25 +37,23 @@ enum {
 	COLOR_BRIGHT_WHITE,
 };
 
-NOCH_DEF void init_color(void);
+NOCH_DEF void colorResetF    (FILE *file);
+NOCH_DEF void colorHighlightF(FILE *file);
 
-NOCH_DEF void reset_color (void);
-NOCH_DEF void highlight_fg(void);
+NOCH_DEF void colorSetFgF(FILE *file, int color);
+NOCH_DEF void colorSetBgF(FILE *file, int color);
+NOCH_DEF void colorSetF  (FILE *file, int fg, int bg);
 
-NOCH_DEF void set_fg_color(int color);
-NOCH_DEF void set_bg_color(int color);
-NOCH_DEF void set_color   (int fg, int bg);
+NOCH_DEF void colorPrintF(FILE *file, const char *fmt, ...);
 
-NOCH_DEF void printf_color(const char *fmt, ...);
+#define colorReset()     colorResetF(stdout)
+#define colorHighlight() colorHighlightF(stdout)
 
-NOCH_DEF void freset_color (FILE *file);
-NOCH_DEF void fhighlight_fg(FILE *file);
+#define colorSetFg(COLOR) colorSetFgF(stdout, COLOR)
+#define colorSetBg(COLOR) colorSetBgF(stdout, COLOR)
+#define colorSet(FG, BG)  colorSetF  (stdout, FG, BG)
 
-NOCH_DEF void fset_fg_color(FILE *file, int color);
-NOCH_DEF void fset_bg_color(FILE *file, int color);
-NOCH_DEF void fset_color   (FILE *file, int fg, int bg);
-
-NOCH_DEF void fprintf_color(FILE *file, const char *fmt, ...);
+#define colorPrint(...) colorPrintF(stdout, __VA_ARGS__)
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,0 @@
-#ifndef NOCH_INTERNAL_PRIVATE_H_HEADER_GUARD
-#define NOCH_INTERNAL_PRIVATE_H_HEADER_GUARD
-
-#define NOCH_PRIV(X) noch__ ## X
-
-#endif

@@ -61,25 +61,25 @@
 	},
 	{
 		"type": "task",
-		"title": "`win`       - Include this instead of <windows.h>",
+		"title": "`windows`   - Include this instead of <windows.h>",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`darray`    - Dynamic array",
+		"title": "`dynarr`    - Dynamic array",
 		"desc": null,
 		"done": false
 	},
 	{
 		"type": "task",
-		"title": "`hmap`      - Hash map",
+		"title": "`hashmap`   - Hash map",
 		"desc": null,
 		"done": true
 	},
 	{
 		"type": "task",
-		"title": "`dstring`   - Dynamic string",
+		"title": "`dynstr`    - Dynamic string",
 		"desc": null,
 		"done": false
 	},
@@ -109,7 +109,7 @@
 	},
 	{
 		"type": "task",
-		"title": "`math_expr` - Math expression parser/evaluator",
+		"title": "`mathexpr`  - Math expression parser/evaluator",
 		"desc": null,
 		"done": true
 	},

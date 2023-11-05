@@ -4,18 +4,15 @@
 extern "C" {
 #endif
 
-#ifndef __cplusplus
-#	include <stdbool.h> /* bool, true, false */
-#endif
-
-#include <stdio.h>  /* fprintf, FILE */
-#include <stdlib.h> /* strtol, strtoull, strtod */
-#include <stddef.h> /* size_t */
-#include <string.h> /* strcmp, strlen, strncpy */
-#include <ctype.h>  /* tolower */
+#include <stdio.h>   /* fprintf, FILE */
+#include <stdlib.h>  /* strtol, strtoull, strtod */
+#include <stddef.h>  /* size_t */
+#include <string.h>  /* strcmp, strlen, strncpy */
+#include <ctype.h>   /* tolower */
+#include <stdbool.h> /* bool, true, false */
 
 #include "internal/def.h"
-#include "internal/err.h"
+#include "internal/error.h"
 
 #ifndef MAX_FLAG_NAME_LEN
 #	define MAX_FLAG_NAME_LEN 128
@@ -25,20 +22,20 @@ extern "C" {
 #	define FLAGS_CAPACITY 128
 #endif
 
-NOCH_DEF bool arg_is_flag     (const char *arg); /* -h, --help */
-NOCH_DEF bool arg_is_long_flag(const char *arg); /* --help */
-NOCH_DEF bool arg_is_flags_end(const char *arg); /* -- */
+NOCH_DEF bool argIsFlag    (const char *arg); /* -h, --help */
+NOCH_DEF bool argIsLongFlag(const char *arg); /* --help */
+NOCH_DEF bool argIsFlagsEnd(const char *arg); /* -- */
 
-#define DECL_FLAG_FUNC(POSTFIX, TYPE)                                           \
-	NOCH_DEF void flag_##POSTFIX(const char *short_name, const char *long_name, \
+#define DECL_FLAG_FUNC(POSTFIX, TYPE)                                        \
+	NOCH_DEF void flag##POSTFIX(const char *shortName, const char *longName, \
 	                             const char *desc, TYPE *var)
 
-DECL_FLAG_FUNC(str,  const char*);
-DECL_FLAG_FUNC(char, char);
-DECL_FLAG_FUNC(int,  int);
-DECL_FLAG_FUNC(size, size_t);
-DECL_FLAG_FUNC(num,  double);
-DECL_FLAG_FUNC(bool, bool);
+DECL_FLAG_FUNC(String, const char*);
+DECL_FLAG_FUNC(Char,   char);
+DECL_FLAG_FUNC(Int,    int);
+DECL_FLAG_FUNC(Size,   size_t);
+DECL_FLAG_FUNC(Num,    double);
+DECL_FLAG_FUNC(Bool,   bool);
 
 #undef DECL_FLAG_FUNC
 
@@ -46,24 +43,24 @@ typedef struct {
 	size_t       c;
 	const char **v;
 	char       **base;
-} args_t;
+} Args;
 
-NOCH_DEF args_t args_new(int argc, const char **argv);
+NOCH_DEF Args argsNew(int argc, const char **argv);
 
-#define FOREACH_IN_ARGS(ARGS, VAR, BODY)                                     \
-	do {                                                                     \
-		for (size_t _foreach_i = 0; _foreach_i < (ARGS)->c; ++ _foreach_i) { \
-			const char *VAR = (ARGS)->v[_foreach_i];                         \
-			BODY                                                             \
-		}                                                                    \
+#define FOREACH_IN_ARGS(THIS, VAR, BODY)                            \
+	do {                                                            \
+		for (size_t nochIt_ = 0; nochIt_ < (THIS)->c; ++ nochIt_) { \
+			const char *VAR = (THIS)->v[nochIt_];                   \
+			BODY                                                    \
+		}                                                           \
 	} while (0)
 
-NOCH_DEF const char *args_shift      (args_t *args);
-NOCH_DEF int         args_parse_flags(args_t *args, size_t *where, args_t *stripped, bool *extra);
+NOCH_DEF const char *argsShift     (Args *args);
+NOCH_DEF int         argsParseFlags(Args *args, Args *stripped);
 
-NOCH_DEF void flags_usage_fprint(FILE *file);
-NOCH_DEF void args_usage_fprint (FILE *file, const char *name, const char **usages,
-                                 size_t usages_count, const char *desc, bool print_flags);
+NOCH_DEF void flagsUsage(FILE *file);
+NOCH_DEF void argsUsage (FILE *file, const char *name, const char **usages,
+                         size_t usagesCount, const char *desc, bool printFlags);
 
 #ifdef __cplusplus
 }

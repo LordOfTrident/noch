@@ -9,9 +9,9 @@
 - [X] `sv`        - String view
 - [X] `utf8`      - UTF8 handling functions
 - [X] `unix`      - Include this instead of <unistd.h>
-- [X] `win`       - Include this instead of <windows.h>
+- [X] `windows`   - Include this instead of <windows.h>
 - [ ] `darray`    - Dynamic array
-- [X] `hmap`      - Hash map
+- [X] `hash_map`  - Hash map
 - [ ] `dstring`   - Dynamic string
 - [ ] `fs`        - Filesystem
 - [ ] `builder`   - C project builder

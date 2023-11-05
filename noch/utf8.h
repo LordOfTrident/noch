@@ -4,13 +4,10 @@
 extern "C" {
 #endif
 
-#ifndef __cplusplus
-#	include <stdbool.h> /* bool, true, false */
-#endif
-
-#include <stddef.h> /* size_t */
-#include <stdint.h> /* uint32_t, uint8_t */
-#include <string.h> /* strlen */
+#include <stddef.h>  /* size_t */
+#include <stdint.h>  /* uint32_t, uint8_t */
+#include <string.h>  /* strlen */
+#include <stdbool.h> /* bool, true, false */
 
 #include "internal/def.h"
 
@@ -27,43 +24,40 @@ extern "C" {
 #define U8_3_BYTE_MASK_NEG (uint8_t)~0xF0 /* 00001111 */
 #define U8_4_BYTE_MASK_NEG (uint8_t)~0xF8 /* 00000111 */
 
-#define FOREACH_IN_U8_STR(STR, VAR, BODY)                          \
-	do {                                                           \
-		const char *_foreach_it = STR;                             \
-		while (*_foreach_it != '\0';) {                            \
-			size_t _rune_size;                                     \
-			rune_t VAR = rune_decode_u8(_foreach_it, &_rune_size); \
-			BODY                                                   \
-			_foreach_it += _rune_size;                             \
-		}                                                          \
+#define FOREACH_IN_STRINGU8(STR, VAR, BODY)                 \
+	do {                                                    \
+		const char *nochIt_ = STR;                          \
+		while (*nochIt_ != '\0';) {                         \
+			size_t nochRuneSize_;                           \
+			Rune VAR = runeFromU8(nochIt_, &nochRuneSize_); \
+			BODY                                            \
+			nochIt_ += nochRuneSize_;                       \
+		}                                                   \
 	} while (0)
 
-typedef uint32_t rune_t;
+typedef uint32_t Rune;
 
-NOCH_DEF size_t u8_rune_size(char ch);
-NOCH_DEF size_t rune_size(rune_t r);
+NOCH_DEF size_t getCodepointSize(char cp);
+NOCH_DEF size_t getRuneSize     (Rune rune);
 
-NOCH_DEF size_t rune_encode_u8(rune_t r, char *b);
-NOCH_DEF rune_t rune_decode_u8(const char *b, size_t *size);
+NOCH_DEF size_t runeToU8  (Rune rune, char *str);
+NOCH_DEF Rune   runeFromU8(const char *str, size_t *size);
 
-NOCH_DEF bool   rune_is_ascii(rune_t r);
-NOCH_DEF rune_t rune_to_lower(rune_t r);
-NOCH_DEF rune_t rune_to_upper(rune_t r);
-NOCH_DEF bool   rune_is_lower(rune_t r);
-NOCH_DEF bool   rune_is_upper(rune_t r);
+NOCH_DEF bool runeIsAscii(Rune rune);
+NOCH_DEF Rune runeToLower(Rune rune);
+NOCH_DEF Rune runeToUpper(Rune rune);
+NOCH_DEF bool runeIsLower(Rune rune);
+NOCH_DEF bool runeIsUpper(Rune rune);
 
-NOCH_DEF const char *u8_str_next(const char *str);
-NOCH_DEF const char *u8_str_prev(const char *str, const char *base);
+NOCH_DEF const char *stringU8Next(const char *str);
+NOCH_DEF const char *stringU8Prev(const char *str, const char *base);
 
-NOCH_DEF size_t      u8_str_bytes     (const char *str);
-NOCH_DEF size_t      u8_str_len       (const char *str);
-NOCH_DEF const char *u8_str_idx_to_ptr(const char *str, size_t idx);
+NOCH_DEF size_t      stringU8Size  (const char *str);
+NOCH_DEF size_t      stringU8Length(const char *str);
+NOCH_DEF const char *stringU8At    (const char *str, size_t idx);
 
-NOCH_DEF const char *u8_str_find_str (const char *str, const char *find, size_t *idx);
-NOCH_DEF const char *u8_str_find_rune(const char *str, rune_t      find, size_t *idx);
-
-NOCH_DEF const char *u8_str_find_str_ci (const char *str, const char *find, size_t *idx);
-NOCH_DEF const char *u8_str_find_rune_ci(const char *str, rune_t      find, size_t *idx);
+NOCH_DEF const char *stringU8FindSub (const char *str, const char *toFind, size_t *idx, bool cs);
+NOCH_DEF const char *stringU8FindRune(const char *str, Rune        toFind, size_t *idx, bool cs);
 
 #ifdef __cplusplus
 }

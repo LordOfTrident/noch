@@ -2,30 +2,15 @@
 extern "C" {
 #endif
 
-#include "internal/private.h"
-
 #include "log.h"
 
-#define log_file           NOCH_PRIV(log_file)
-#define log_flags          NOCH_PRIV(log_flags)
-#define log_is_init        NOCH_PRIV(log_is_init)
-#define log_color_to_attr  NOCH_PRIV(log_color_to_attr)
-#define log_stdout_handle  NOCH_PRIV(log_stdout_handle)
-#define log_stderr_handle  NOCH_PRIV(log_stderr_handle)
-#define log_prev_csbi      NOCH_PRIV(log_prev_csbi)
-#define log_file_to_handle NOCH_PRIV(log_file_to_handle)
-#define log_color_to_ansi  NOCH_PRIV(log_color_to_ansi)
-#define log_has_color      NOCH_PRIV(log_has_color)
-#define init_log           NOCH_PRIV(init_log)
-#define log_reset_color    NOCH_PRIV(log_reset_color)
-
-static FILE *NOCH_PRIV(log_file)    = NULL;
-static int   NOCH_PRIV(log_flags)   = LOG_BASIC;
-static bool  NOCH_PRIV(log_is_init) = false;
+static FILE *logFile   = NULL;
+static int   logFlags  = LOG_BASIC;
+static bool  logIsInit = false;
 
 #ifdef PLATFORM_WINDOWS
 
-static WORD NOCH_PRIV(log_color_to_attr)[] = {
+static WORD logColorToAttr[] = {
 	0,
 	/* LOG_RED     */ FOREGROUND_RED | FOREGROUND_INTENSITY,
 	/* LOG_GREEN   */ FOREGROUND_GREEN | FOREGROUND_INTENSITY,
@@ -36,23 +21,23 @@ static WORD NOCH_PRIV(log_color_to_attr)[] = {
 	/* LOG_WHITE   */ FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
 };
 
-static HANDLE NOCH_PRIV(log_stdout_handle);
-static HANDLE NOCH_PRIV(log_stderr_handle);
+static HANDLE logStdoutHandle;
+static HANDLE logStderrHandle;
 
-static CONSOLE_SCREEN_BUFFER_INFO NOCH_PRIV(log_prev_csbi);
+static CONSOLE_SCREEN_BUFFER_INFO logPrevCsbi;
 
-static HANDLE NOCH_PRIV(log_file_to_handle)(void) {
-	if (log_file == stdout)
-		return log_stdout_handle;
-	else if (log_file == stderr)
-		return log_stderr_handle;
+static HANDLE logFileToHandle(void) {
+	if (logFile == stdout)
+		return logStdoutHandle;
+	else if (logFile == stderr)
+		return logStderrHandle;
 	else
 		return INVALID_HANDLE_VALUE;
 }
 
 #else
 
-static const char *NOCH_PRIV(log_color_to_ansi)[] = {
+static const char *logColorToAnsi[] = {
 	0,
 	/* LOG_RED     */ "\x1b[1;31m",
 	/* LOG_GREEN   */ "\x1b[1;32m",
@@ -65,58 +50,58 @@ static const char *NOCH_PRIV(log_color_to_ansi)[] = {
 
 #endif
 
-static bool NOCH_PRIV(log_has_color)(void) {
-	return log_file == stdout || log_file == stderr;
+static bool logHasColor(void) {
+	return logFile == stdout || logFile == stderr;
 }
 
-static void NOCH_PRIV(init_log)(void) {
-	log_is_init = true;
+static void logInit(void) {
+	logIsInit = true;
 
 #ifdef PLATFORM_WINDOWS
-	log_stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	log_stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+	logStdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	logStderrHandle = GetStdHandle(STD_ERROR_HANDLE);
 
-	GetConsoleScreenBufferInfo(log_stdout_handle, &log_prev_csbi);
+	GetConsoleScreenBufferInfo(logStdoutHandle, &logPrevCsbi);
 #endif
 
-	if (log_file == NULL)
-		log_file = stderr;
+	if (logFile == NULL)
+		logFile = stderr;
 }
 
-NOCH_DEF void set_log_file(FILE *file) {
-	log_file = file;
+NOCH_DEF void logSetFile(FILE *file) {
+	logFile = file;
 }
 
-NOCH_DEF void set_log_flags(int flags) {
-	log_flags = flags;
+NOCH_DEF void logSetFlags(int flags) {
+	logFlags = flags;
 }
 
-static void NOCH_PRIV(log_reset_color)(void) {
-	if (log_has_color())
+static void logResetColor(void) {
+	if (logHasColor())
 #ifdef PLATFORM_WINDOWS
-		SetConsoleTextAttribute(log_file_to_handle(), log_prev_csbi.wAttributes);
+		SetConsoleTextAttribute(logFileToHandle(), logPrevCsbi.wAttributes);
 #else
-		fputs("\x1b[0m", log_file);
+		fprintf(logFile, "\x1b[0m");
 #endif
 }
 
-NOCH_DEF void log_generic(int color, const char *title, const char *path,
-                          size_t line, const char *fmt, ...) {
-	if (!log_is_init)
-		init_log();
+NOCH_DEF void logGeneric(int color, const char *title, const char *path,
+                         size_t line, const char *fmt, ...) {
+	if (!logIsInit)
+		logInit();
 
-	log_reset_color();
+	logResetColor();
 
 #ifdef PLATFORM_WINDOWS
-	HANDLE handle = log_file_to_handle();
+	HANDLE handle = logFileToHandle();
 #endif
 
-	if (log_flags & LOG_TIME_DATE) {
-		if (log_has_color())
+	if (logFlags & LOG_TIME_DATE) {
+		if (logHasColor())
 #ifdef PLATFORM_WINDOWS
 			SetConsoleTextAttribute(handle, FOREGROUND_INTENSITY);
 #else
-			fputs("\x1b[0;1;90m", log_file);
+			fprintf(logFile, "\x1b[0;1;90m");
 #endif
 
 		time_t timer;
@@ -124,40 +109,40 @@ NOCH_DEF void log_generic(int color, const char *title, const char *path,
 		timer = time(NULL);
 		info  = localtime(&timer);
 
-		if (log_flags & LOG_DATE) {
+		if (logFlags & LOG_DATE) {
 			char buf[16];
 			strftime(buf, 16, "%Y-%m-%d ", info);
-			fputs(buf, log_file);
+			fprintf(logFile, "%s", buf);
 		}
 
-		if (log_flags & LOG_TIME)
-			fprintf(log_file, "%02d:%02d:%02d ", info->tm_hour, info->tm_min, info->tm_sec);
+		if (logFlags & LOG_TIME)
+			fprintf(logFile, "%02d:%02d:%02d ", info->tm_hour, info->tm_min, info->tm_sec);
 	}
 
-	if (log_has_color())
+	if (logHasColor())
 #ifdef PLATFORM_WINDOWS
-		SetConsoleTextAttribute(handle, log_color_to_attr[color]);
+		SetConsoleTextAttribute(handle, logColorToAttr[color]);
 #else
-		fputs(log_color_to_ansi[color], log_file);
+		fprintf(logFile, "%s", logColorToAnsi[color]);
 #endif
 
-	fprintf(log_file, "[%s]", title);
+	fprintf(logFile, "[%s]", title);
 
-	if (log_flags & LOG_LOCATION) {
-		if (log_has_color())
+	if (logFlags & LOG_LOCATION) {
+		if (logHasColor())
 #ifdef PLATFORM_WINDOWS
 			SetConsoleTextAttribute(handle, FOREGROUND_RED  | FOREGROUND_GREEN |
 			                                FOREGROUND_BLUE | FOREGROUND_INTENSITY);
 #else
-			fputs("\x1b[0;1;97m", log_file);
+			fprintf(logFile, "\x1b[0;1;97m");
 #endif
 
-		fputc(' ', log_file);
+		fprintf(logFile, " ");
 
-		if (log_flags & LOG_FILE)
-			fprintf(log_file, "%s:", path);
-		if (log_flags & LOG_LINE)
-			fprintf(log_file, "%lu:", (long unsigned)line);
+		if (logFlags & LOG_FILE)
+			fprintf(logFile, "%s:", path);
+		if (logFlags & LOG_LINE)
+			fprintf(logFile, "%lu:", (long unsigned)line);
 	}
 
 	char    str[1024];
@@ -166,22 +151,9 @@ NOCH_DEF void log_generic(int color, const char *title, const char *path,
 	vsnprintf(str, sizeof(str), fmt, args);
 	va_end(args);
 
-	log_reset_color();
-	fprintf(log_file, " %s\n", str);
+	logResetColor();
+	fprintf(logFile, " %s\n", str);
 }
-
-#undef log_file
-#undef log_flags
-#undef log_is_init
-#undef log_color_to_attr
-#undef log_stdout_handle
-#undef log_stderr_handle
-#undef log_prev_csbi
-#undef log_file_to_handle
-#undef log_color_to_ansi
-#undef log_has_color
-#undef init_log
-#undef log_reset_color
 
 #ifdef __cplusplus
 }

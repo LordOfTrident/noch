@@ -3,6 +3,13 @@
 
 #include "platform.h"
 
+/* The following should be used instead of the PACK macro:
+ *
+ *     #pragma pack(push, 1)
+ *     struct {...};
+ *     #pragma pack(pop)
+ */
+
 #if __cplusplus - 0 >= 201402L
 #	define DEPRECATED(MSG) [[deprecated(MSG)]]
 #elif defined(COMPILER_GCC) || defined(COMPILER_CLANG)
@@ -27,6 +34,7 @@
 #	define WARN_UNUSED_RESULT
 #	define INLINE
 #	define PACK(STRUCT)
+#	define EXPORT
 #endif
 
 #endif

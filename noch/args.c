@@ -2,37 +2,22 @@
 extern "C" {
 #endif
 
-#include "internal/private.h"
 #include "internal/alloc.h"
 #include "internal/assert.h"
-#include "internal/err.c"
+#include "internal/error.c"
 
 #include "args.h"
 
-#define flag_type_t            NOCH_PRIV(flag_type_t)
-#define flag_t                 NOCH_PRIV(flag_t)
-#define flags                  NOCH_PRIV(flags)
-#define flags_count            NOCH_PRIV(flags_count)
-#define flag_get_by_short_name NOCH_PRIV(flag_get_by_short_name)
-#define flag_get_by_long_name  NOCH_PRIV(flag_get_by_long_name)
-#define arg_to_char            NOCH_PRIV(arg_to_char)
-#define arg_to_int             NOCH_PRIV(arg_to_int)
-#define arg_to_size            NOCH_PRIV(arg_to_size)
-#define arg_to_num             NOCH_PRIV(arg_to_num)
-#define arg_equals_ci          NOCH_PRIV(arg_equals_ci)
-#define arg_to_bool            NOCH_PRIV(arg_to_bool)
-#define flag_set_from_arg      NOCH_PRIV(flag_set_from_arg)
-
-NOCH_DEF bool arg_is_flag(const char *arg) {
+NOCH_DEF bool argIsFlag(const char *arg) {
 	NOCH_ASSERT(arg != NULL);
 
 	if (strlen(arg) > 1)
-		return arg[0] == '-' && !arg_is_flags_end(arg);
+		return arg[0] == '-' && !argIsFlagsEnd(arg);
 	else
 		return false;
 }
 
-NOCH_DEF bool arg_is_long_flag(const char *arg) {
+NOCH_DEF bool argIsLongFlag(const char *arg) {
 	NOCH_ASSERT(arg != NULL);
 
 	if (strlen(arg) > 2)
@@ -41,14 +26,14 @@ NOCH_DEF bool arg_is_long_flag(const char *arg) {
 		return false;
 }
 
-NOCH_DEF bool arg_is_flags_end(const char *arg) {
+NOCH_DEF bool argIsFlagsEnd(const char *arg) {
 	NOCH_ASSERT(arg != NULL);
 
 	return strcmp(arg, "--") == 0;
 }
 
 typedef enum {
-	FLAG_STR = 0,
+	FLAG_STRING = 0,
 	FLAG_CHAR,
 	FLAG_INT,
 	FLAG_SIZE,
@@ -56,66 +41,66 @@ typedef enum {
 	FLAG_BOOL,
 
 	FLAG_TYPE_COUNT,
-} NOCH_PRIV(flag_type_t);
+} FlagType;
 
 typedef struct {
-	flag_type_t type;
+	FlagType type;
 
 	union {
 		const char **str;
 		char        *ch;
-		int         *int_;
+		int         *intx;
 		size_t      *size;
 		double      *num;
-		bool        *bool_;
+		bool        *boolx;
 	} var;
 
 	union {
 		const char *str;
 		char        ch;
-		int         int_;
+		int         intx;
 		size_t      size;
 		double      num;
-		bool        bool_;
-	} default_val;
+		bool        boolx;
+	} defaultVal;
 
-	const char *short_name, *long_name, *desc;
-} NOCH_PRIV(flag_t);
+	const char *shortName, *longName, *desc;
+} Flag;
 
-flag_t flags[FLAGS_CAPACITY];
-size_t flags_count = 0;
+Flag   flags[FLAGS_CAPACITY];
+size_t flagsCount = 0;
 
-static flag_t *NOCH_PRIV(flag_get_by_short_name)(const char *short_name) {
-	if (short_name == NULL)
+static Flag *getFlagByShortName(const char *shortName) {
+	if (shortName == NULL)
 		return NULL;
 
-	for (size_t i = 0; i < flags_count; ++ i) {
-		if (flags[i].short_name == NULL)
+	for (size_t i = 0; i < flagsCount; ++ i) {
+		if (flags[i].shortName == NULL)
 			continue;
 
-		if (strcmp(flags[i].short_name, short_name) == 0)
+		if (strcmp(flags[i].shortName, shortName) == 0)
 			return &flags[i];
 	}
 
 	return NULL;
 }
 
-static flag_t *NOCH_PRIV(flag_get_by_long_name)(const char *long_name) {
-	if (long_name == NULL)
+static Flag *getFlagByLongName(const char *longName) {
+	if (longName == NULL)
 		return NULL;
 
-	for (size_t i = 0; i < flags_count; ++ i) {
-		if (flags[i].long_name == NULL)
+	for (size_t i = 0; i < flagsCount; ++ i) {
+		if (flags[i].longName == NULL)
 			continue;
 
-		if (strcmp(flags[i].long_name, long_name) == 0)
+		if (strcmp(flags[i].longName, longName) == 0)
 			return &flags[i];
 	}
 
 	return NULL;
 }
 
-static int NOCH_PRIV(arg_to_char)(const char *arg, char *var) {
+static int argToChar(const char *arg, char *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -126,7 +111,7 @@ static int NOCH_PRIV(arg_to_char)(const char *arg, char *var) {
 	return 0;
 }
 
-static int NOCH_PRIV(arg_to_int)(const char *arg, int *var) {
+static int argToInt(const char *arg, int *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -135,7 +120,7 @@ static int NOCH_PRIV(arg_to_int)(const char *arg, int *var) {
 	return *ptr == '\0'? 0 : -1;
 }
 
-static int NOCH_PRIV(arg_to_size)(const char *arg, size_t *var) {
+static int argToSize(const char *arg, size_t *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -144,7 +129,7 @@ static int NOCH_PRIV(arg_to_size)(const char *arg, size_t *var) {
 	return *ptr == '\0'? 0 : -1;
 }
 
-static int NOCH_PRIV(arg_to_num)(const char *arg, double *var) {
+static int argToNum(const char *arg, double *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
@@ -154,7 +139,7 @@ static int NOCH_PRIV(arg_to_num)(const char *arg, double *var) {
 }
 
 /* Case insensitive equality function */
-static bool NOCH_PRIV(arg_equals_ci)(const char *a, const char *b) {
+static bool argEquals(const char *a, const char *b) {
 	size_t len = strlen(a);
 	if (len != strlen(b))
 		return -1;
@@ -167,19 +152,19 @@ static bool NOCH_PRIV(arg_equals_ci)(const char *a, const char *b) {
 	return 0;
 }
 
-#define ARG_EQUALS_CI_4(STR, A, B, C, D) \
-	(arg_equals_ci(STR, A) ||            \
-	 arg_equals_ci(STR, B) ||            \
-	 arg_equals_ci(STR, C) ||            \
-	 arg_equals_ci(STR, D))
+#define ARG_EQUALS_4(STR, A, B, C, D) \
+	(argEquals(STR, A) ||             \
+	 argEquals(STR, B) ||             \
+	 argEquals(STR, C) ||             \
+	 argEquals(STR, D))
 
-static int NOCH_PRIV(arg_to_bool)(const char *arg, bool *var) {
+static int argToBool(const char *arg, bool *var) {
 	NOCH_ASSERT(arg != NULL);
 	NOCH_ASSERT(var != NULL);
 
-	if (ARG_EQUALS_CI_4(arg, "true",  "1", "yes", "y"))
+	if (ARG_EQUALS_4(arg, "true",  "1", "yes", "y"))
 		*var = true;
-	else if (ARG_EQUALS_CI_4(arg, "false", "0", "no",  "n"))
+	else if (ARG_EQUALS_4(arg, "false", "0", "no",  "n"))
 		*var = false;
 	else
 		return -1;
@@ -187,28 +172,28 @@ static int NOCH_PRIV(arg_to_bool)(const char *arg, bool *var) {
 	return 0;
 }
 
-#undef ARG_EQUALS_CI_4
+#undef ARG_EQUALS_4
 
 /* Set the flags value from an arg. Type is automatically assumed from the flag type */
-static int NOCH_PRIV(flag_set_from_arg)(flag_t *flag, const char *arg) {
+static int setFlagFromArg(Flag *flag, const char *arg, const char *orig) {
 	NOCH_ASSERT(flag != NULL);
 	NOCH_ASSERT(arg  != NULL);
 
-#define FLAG_SET(FIELD, FUNC, ERR)           \
+#define FLAG_SET(FIELD, FUNC, ...)           \
 	do {                                     \
 		if (FUNC(arg, flag->var.FIELD) != 0) \
-			return NOCH_PARSER_ERR(ERR);     \
+			return nochError(__VA_ARGS__);   \
 	} while (0)
 
 	NOCH_ASSERT(flag->type < FLAG_TYPE_COUNT);
 
 	switch (flag->type) {
-	case FLAG_STR:  *flag->var.str = arg; break;
-	case FLAG_CHAR: FLAG_SET(ch,    arg_to_char, "Expected a character"); break;
-	case FLAG_INT:  FLAG_SET(int_,  arg_to_int,  "Expected an integer");  break;
-	case FLAG_SIZE: FLAG_SET(size,  arg_to_size, "Expected a size");      break;
-	case FLAG_NUM:  FLAG_SET(num,   arg_to_num,  "Expected a number");    break;
-	case FLAG_BOOL: FLAG_SET(bool_, arg_to_bool, "Expected a boolean");   break;
+	case FLAG_STRING: *flag->var.str = arg; break;
+	case FLAG_CHAR: FLAG_SET(ch,    argToChar, "\"%s\": Expected a character", orig); break;
+	case FLAG_INT:  FLAG_SET(intx,  argToInt,  "\"%s\": Expected an integer",  orig); break;
+	case FLAG_SIZE: FLAG_SET(size,  argToSize, "\"%s\": Expected a size",      orig); break;
+	case FLAG_NUM:  FLAG_SET(num,   argToNum,  "\"%s\": Expected a number",    orig); break;
+	case FLAG_BOOL: FLAG_SET(boolx, argToBool, "\"%s\": Expected a boolean",   orig); break;
 
 	default: NOCH_ASSERT(0 && "Unknown flag type");
 	}
@@ -218,45 +203,45 @@ static int NOCH_PRIV(flag_set_from_arg)(flag_t *flag, const char *arg) {
 	return 0;
 }
 
-#define IMPL_FLAG_FUNC(POSTFIX, TYPE, FLAG_TYPE, FIELD)                         \
-	NOCH_DEF void flag_##POSTFIX(const char *short_name, const char *long_name, \
-	                             const char *desc, TYPE *var) {                 \
-		NOCH_ASSERT(var != NULL);                                               \
-		NOCH_ASSERT(flags_count < FLAGS_CAPACITY);                              \
-		if (short_name != NULL)                                                 \
-			NOCH_ASSERT(strlen(short_name) <= MAX_FLAG_NAME_LEN);               \
-		if (long_name != NULL)                                                  \
-			NOCH_ASSERT(strlen(long_name)  <= MAX_FLAG_NAME_LEN);               \
-		                                                                        \
-		flag_t *flag = &flags[flags_count ++];                                  \
-		flag->type              = FLAG_TYPE;                                    \
-		flag->var.FIELD         = var;                                          \
-		flag->default_val.FIELD = *(var);                                       \
-		flag->short_name        = short_name;                                   \
-		flag->long_name         = long_name;                                    \
-		flag->desc              = desc;                                         \
+#define IMPL_FLAG_FUNC(POSTFIX, TYPE, FLAG_TYPE, FIELD)                      \
+	NOCH_DEF void flag##POSTFIX(const char *shortName, const char *longName, \
+	                            const char *desc, TYPE *var) {               \
+		NOCH_ASSERT(var != NULL);                                            \
+		NOCH_ASSERT(flagsCount < FLAGS_CAPACITY);                            \
+		if (shortName != NULL)                                               \
+			NOCH_ASSERT(strlen(shortName) <= MAX_FLAG_NAME_LEN);             \
+		if (longName != NULL)                                                \
+			NOCH_ASSERT(strlen(longName)  <= MAX_FLAG_NAME_LEN);             \
+		                                                                     \
+		Flag *flag = &flags[flagsCount ++];                                  \
+		flag->type             = FLAG_TYPE;                                  \
+		flag->var.FIELD        = var;                                        \
+		flag->defaultVal.FIELD = *(var);                                     \
+		flag->shortName        = shortName;                                  \
+		flag->longName         = longName;                                   \
+		flag->desc             = desc;                                       \
 	}
 
-IMPL_FLAG_FUNC(str,  const char*, FLAG_STR,  str)
-IMPL_FLAG_FUNC(char, char,        FLAG_CHAR, ch)
-IMPL_FLAG_FUNC(int,  int,         FLAG_INT,  int_)
-IMPL_FLAG_FUNC(size, size_t,      FLAG_SIZE, size)
-IMPL_FLAG_FUNC(num,  double,      FLAG_NUM,  num)
-IMPL_FLAG_FUNC(bool, bool,        FLAG_BOOL, bool_)
+IMPL_FLAG_FUNC(String, const char*, FLAG_STRING, str)
+IMPL_FLAG_FUNC(Char,   char,        FLAG_CHAR,   ch)
+IMPL_FLAG_FUNC(Int,    int,         FLAG_INT,    intx)
+IMPL_FLAG_FUNC(Size,   size_t,      FLAG_SIZE,   size)
+IMPL_FLAG_FUNC(Num,    double,      FLAG_NUM,    num)
+IMPL_FLAG_FUNC(Bool,   bool,        FLAG_BOOL,   boolx)
 
 #undef IMPL_FLAG_FUNC
 
-NOCH_DEF args_t args_new(int argc, const char **argv) {
+NOCH_DEF Args argsNew(int argc, const char **argv) {
 	NOCH_ASSERT(argv != NULL);
 
-	args_t a;
+	Args a;
 	a.c    = (size_t)argc;
 	a.v    = argv;
 	a.base = (char**)argv;
 	return a;
 }
 
-NOCH_DEF const char *args_shift(args_t *args) {
+NOCH_DEF const char *argsShift(Args *args) {
 	NOCH_ASSERT(args != NULL);
 
 	if (args->c <= 0)
@@ -267,60 +252,50 @@ NOCH_DEF const char *args_shift(args_t *args) {
 	return arg;
 }
 
-NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, bool *extra) {
+NOCH_DEF int argsParseFlags(Args *args, Args *stripped) {
 	NOCH_ASSERT(args != NULL);
 
 	/* If stripped args are expected to be returned, allocate memory for them
 	   (allocate the same size as the original arguments so we dont have to do any reallocs) */
 	if (stripped != NULL) {
-		NOCH_MUST_ALLOC(char*, stripped->base, args->c + 1);
+		stripped->base = (char**)nochAlloc((args->c + 1) * sizeof(char*));
+		if (stripped->base == NULL)
+			NOCH_OUT_OF_MEM();
 
 		stripped->v = (const char**)stripped->base;
 		stripped->c = 0;
 	}
 
-	bool   has_extra   = false;
-	size_t extra_where = 0;
-
-	if (extra != NULL)
-		*extra = false;
-
-	bool flags_end = false;
+	bool flagsEnd = false;
 	for (size_t i = 0; i < args->c; ++ i) {
-		const char *arg = args->v[i];
-		if (arg_is_flags_end(arg) && !flags_end) {
+		const char *arg = args->v[i], *orig = arg;
+		if (argIsFlagsEnd(arg) && !flagsEnd) {
 			/* If stripped args arent expected to be returned, we can just return from the
 			   function after reaching the end of flag args */
 
 			if (stripped == NULL) {
-				if (i + 1 < args->c) {
-					has_extra   = true;
-					extra_where = i + 1;
-				}
+				if (i + 1 < args->c)
+					return nochError("\"%s\": Unexpected argument", args->v[i + 1]);
+
 				break;
 			} else {
-				flags_end = true;
+				flagsEnd = true;
 				continue;
 			}
-		} else if (!arg_is_flag(arg) || flags_end) {
+		} else if (!argIsFlag(arg) || flagsEnd) {
 			/* If stripped args are supposed to be returned, save each non-flag arg */
-			if (!has_extra) {
-				has_extra   = true;
-				extra_where = i;
-			}
 
 			if (stripped != NULL)
 				stripped->v[stripped->c ++] = arg;
+			else
+				return nochError("\"%s\": Unexpected argument", orig);
 
 			/* Dont parse non-flag args as flags */
 			continue;
 		}
 
-		if (where != NULL)
-			*where = i;
-
-		bool is_long = arg_is_long_flag(arg);
-		arg += is_long + 1;
+		bool isLong = argIsLongFlag(arg);
+		arg += isLong + 1;
 
 		/* Find the end of the flag name */
 		const char *tmp   = arg;
@@ -330,7 +305,7 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 			++ arg;
 		}
 		if (count > MAX_FLAG_NAME_LEN)
-			return NOCH_PARSER_ERR("Unknown flag");
+			return nochError("\"%s\": Unknown flag", orig);
 
 		/* Allocate memory for flag name and copy it there */
 		char name[MAX_FLAG_NAME_LEN];
@@ -338,31 +313,31 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 		name[count] = '\0';
 
 		/* Get the flag pointer */
-		flag_t *flag = is_long? flag_get_by_long_name(name) : flag_get_by_short_name(name);
+		Flag *flag = isLong? getFlagByLongName(name) : getFlagByShortName(name);
 		if (flag == NULL)
-			return NOCH_PARSER_ERR("Unknown flag");
+			return nochError("\"%s\": Unknown flag", orig);
 
 		/* If the flag has '=', save the value */
 		if (*arg == '=') {
 			++ arg;
 
-			if (flag_set_from_arg(flag, arg) != 0)
+			if (setFlagFromArg(flag, arg, orig) != 0)
 				return -1;
 		} else if (flag->type == FLAG_BOOL)
 			/* If there was no value in the flag, Set the flag to true if its a boolean flag */
-			*flag->var.bool_ = true;
+			*flag->var.boolx = true;
 		else {
 			/* Otherwise, read the next argument for the value */
 			++ i;
 			if (i >= args->c) {
-				if (flag->type == FLAG_STR)
+				if (flag->type == FLAG_STRING)
 					/* If there is no value for the flag, Set the flag to
 					   an empty string if its a string flag */
 					*flag->var.str = "";
 				else
-					return NOCH_PARSER_ERR("Missing value");
+					return nochError("\"%s\": Missing value", orig);
 			} else
-				if (flag_set_from_arg(flag, (char*)args->v[i]) != 0)
+				if (setFlagFromArg(flag, args->v[i], orig) != 0)
 					return -1;
 		}
 	}
@@ -370,20 +345,13 @@ NOCH_DEF int args_parse_flags(args_t *args, size_t *where, args_t *stripped, boo
 	if (stripped != NULL)
 		stripped->v[stripped->c] = NULL;
 
-	if (extra != NULL && has_extra) {
-		if (where != NULL)
-			*where = extra_where;
-
-		*extra = true;
-		return 0;
-	} else
-		return 0;
+	return 0;
 }
 
-NOCH_DEF void flags_usage_fprint(FILE *file) {
+NOCH_DEF void flagsUsage(FILE *file) {
 	NOCH_ASSERT(file != NULL);
 
-	if (flags_count == 0)
+	if (flagsCount == 0)
 		return;
 
 	/* Find the offset of the flag descriptions so all the descriptions are aligned, like so:
@@ -392,33 +360,38 @@ NOCH_DEF void flags_usage_fprint(FILE *file) {
 		  -r               Foo bar baz
 		  -f               Whatever description
 	*/
+
+#define FMT_SHORTNAME "  -%s", flag->shortName
+#define FMT_LONGNAME  "  --%s", flag->longName
+#define FMT_BOTH      "  -%s, --%s", flag->shortName, flag->longName
+
 	int longest = 0;
-	for (size_t i = 0; i < flags_count; ++ i) {
-		flag_t *flag = &flags[i];
+	for (size_t i = 0; i < flagsCount; ++ i) {
+		Flag *flag = &flags[i];
 
 		int len;
-		if (flag->short_name == NULL)
-			len = snprintf(NULL, 0, "  --%s", flag->long_name);
-		else if (flag->long_name == NULL)
-			len = snprintf(NULL, 0, "  -%s", flag->short_name);
+		if (flag->shortName == NULL)
+			len = snprintf(NULL, 0, FMT_LONGNAME);
+		else if (flag->longName == NULL)
+			len = snprintf(NULL, 0, FMT_SHORTNAME);
 		else
-			len = snprintf(NULL, 0, "  -%s, --%s", flag->short_name, flag->long_name);
+			len = snprintf(NULL, 0, FMT_BOTH);
 
 		if (len > longest)
 			longest = len;
 	}
 
 	/* Print all flags and align descriptions */
-	for (size_t i = 0; i < flags_count; ++ i) {
-		flag_t *flag = &flags[i];
+	for (size_t i = 0; i < flagsCount; ++ i) {
+		Flag *flag = &flags[i];
 
 		int len;
-		if (flag->short_name == NULL)
-			len = fprintf(file, "  --%s", flag->long_name);
-		else if (flag->long_name == NULL)
-			len = fprintf(file, "  -%s", flag->short_name);
+		if (flag->shortName == NULL)
+			len = fprintf(file, FMT_LONGNAME);
+		else if (flag->longName == NULL)
+			len = fprintf(file, FMT_SHORTNAME);
 		else
-			len = fprintf(file, "  -%s, --%s", flag->short_name, flag->long_name);
+			len = fprintf(file, FMT_BOTH);
 
 		for (int i = len; i < longest; ++ i)
 			fputc(' ', file);
@@ -426,8 +399,8 @@ NOCH_DEF void flags_usage_fprint(FILE *file) {
 		fprintf(file, "    %s", flag->desc);
 
 		/* If the default value is a false bool or a NULL string, dont print it */
-		if ((flag->type == FLAG_BOOL && !flag->default_val.bool_) ||
-		    (flag->type == FLAG_STR  && flag->default_val.str == NULL)) {
+		if ((flag->type == FLAG_BOOL   && !flag->defaultVal.boolx) ||
+		    (flag->type == FLAG_STRING && flag->defaultVal.str == NULL)) {
 			fprintf(file, "\n");
 			continue;
 		}
@@ -436,26 +409,31 @@ NOCH_DEF void flags_usage_fprint(FILE *file) {
 
 		fprintf(file, " (default \"");
 		switch (flag->type) {
-		case FLAG_STR:  fprintf(file, "%s",  flag->default_val.str);                 break;
-		case FLAG_CHAR: fprintf(file, "%c",  flag->default_val.ch);                  break;
-		case FLAG_INT:  fprintf(file, "%i",  flag->default_val.int_);                break;
-		case FLAG_SIZE: fprintf(file, "%lu", (long unsigned)flag->default_val.size); break;
-		case FLAG_NUM:  fprintf(file, "%f",  flag->default_val.num);                 break;
-		case FLAG_BOOL: fprintf(file, "true");                                       break;
+		case FLAG_STRING:fprintf(file, "%s",  flag->defaultVal.str);                 break;
+		case FLAG_CHAR:  fprintf(file, "%c",  flag->defaultVal.ch);                  break;
+		case FLAG_INT:   fprintf(file, "%i",  flag->defaultVal.intx);                break;
+		case FLAG_SIZE:  fprintf(file, "%lu", (long unsigned)flag->defaultVal.size); break;
+		case FLAG_NUM:   fprintf(file, "%f",  flag->defaultVal.num);                 break;
+		case FLAG_BOOL:  fprintf(file, "true");                                      break;
 
 		default: NOCH_ASSERT(0 && "Unknown flag type");
 		}
 		fprintf(file, "\")\n");
 	}
+
+#undef FMT_SHORTNAME
+#undef FMT_LONGNAME
+#undef FMT_BOTH
+
 }
 
-NOCH_DEF void args_usage_fprint(FILE *file, const char *name, const char **usages,
-                                size_t usages_count, const char *desc, bool print_flags) {
+NOCH_DEF void argsUsage(FILE *file, const char *name, const char **usages,
+                        size_t usagesCount, const char *desc, bool printFlags) {
 	NOCH_ASSERT(file != NULL);
 
-	if (usages != NULL && usages_count > 0) {
+	if (usages != NULL && usagesCount > 0) {
 		NOCH_ASSERT(name != NULL);
-		for (size_t i = 0; i < usages_count; ++ i)
+		for (size_t i = 0; i < usagesCount; ++ i)
 			fprintf(file, i == 0? "Usage: %s %s\n" : "       %s %s\n", name, usages[i]);
 
 		if (desc != NULL)
@@ -465,29 +443,15 @@ NOCH_DEF void args_usage_fprint(FILE *file, const char *name, const char **usage
 	if (desc != NULL) {
 		fprintf(file, "%s\n", desc);
 
-		if (flags_count > 0 && print_flags)
+		if (flagsCount > 0 && printFlags)
 			fprintf(file, "\n");
 	}
 
-	if (print_flags) {
+	if (printFlags) {
 		fprintf(file, "Options:\n");
-		flags_usage_fprint(file);
+		flagsUsage(file);
 	}
 }
-
-#undef flag_type_t
-#undef flag_t
-#undef flags
-#undef flags_count
-#undef flag_get_by_short_name
-#undef flag_get_by_long_name
-#undef arg_to_char
-#undef arg_to_int
-#undef arg_to_size
-#undef arg_to_num
-#undef arg_equals_ci
-#undef arg_to_bool
-#undef flag_set_from_arg
 
 #ifdef __cplusplus
 }

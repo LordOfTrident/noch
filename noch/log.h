@@ -4,20 +4,17 @@
 extern "C" {
 #endif
 
-#ifndef __cplusplus
-#	include <stdbool.h> /* bool, true, false */
-#endif
-
-#include <stdlib.h> /* exit, EXIT_FAILURE */
-#include <stdio.h>  /* stdout, stderr, fputs, fputc */
-#include <stdarg.h> /* va_list, va_start, va_end, vsnprintf */
-#include <time.h>   /* struct tm, time, localtime, strftime,  */
+#include <stdlib.h>  /* exit, EXIT_FAILURE */
+#include <stdio.h>   /* stdout, stderr, fprintf */
+#include <stdarg.h>  /* va_list, va_start, va_end, vsnprintf */
+#include <time.h>    /* struct tm, time, localtime, strftime,  */
+#include <stdbool.h> /* bool, true, false */
 
 #include "internal/def.h"
 #include "platform.h"
 
 #ifdef PLATFORM_WINDOWS
-#	include "win.h"
+#	include "windows.h"
 #endif
 
 #define LOG_TIME_DATE (LOG_TIME | LOG_DATE)
@@ -31,8 +28,8 @@ enum {
 	LOG_LINE  = 1 << 3,
 };
 
-NOCH_DEF void set_log_file (FILE *file);
-NOCH_DEF void set_log_flags(int   flags);
+NOCH_DEF void logSetFile (FILE *file);
+NOCH_DEF void logSetFlags(int flags);
 
 enum {
 	LOG_RED = 1,
@@ -44,14 +41,14 @@ enum {
 	LOG_WHITE,
 };
 
-#define LOG_INFO(...)  log_generic(LOG_CYAN,    "INFO",  __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_WARN(...)  log_generic(LOG_YELLOW,  "WARN",  __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_ERROR(...) log_generic(LOG_RED,     "ERROR", __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_FATAL(...) \
-	(log_generic(LOG_MAGENTA, "FATAL", __FILE__, __LINE__, __VA_ARGS__), exit(EXIT_FAILURE))
+#define logInfo(...)  logGeneric(LOG_CYAN,   "INFO",  __FILE__, __LINE__, __VA_ARGS__)
+#define logWarn(...)  logGeneric(LOG_YELLOW, "WARN",  __FILE__, __LINE__, __VA_ARGS__)
+#define logError(...) logGeneric(LOG_RED,    "ERROR", __FILE__, __LINE__, __VA_ARGS__)
+#define logFatal(...) \
+	(logGeneric(LOG_MAGENTA, "FATAL", __FILE__, __LINE__, __VA_ARGS__), exit(EXIT_FAILURE))
 
-NOCH_DEF void log_generic(int color, const char *title, const char *path,
-                          size_t line, const char *fmt, ...);
+NOCH_DEF void logGeneric(int color, const char *title, const char *path,
+                         size_t line, const char *fmt, ...);
 
 #ifdef __cplusplus
 }

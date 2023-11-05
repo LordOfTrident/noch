@@ -4,7 +4,7 @@
 #include <noch/common.c>
 
 int main(void) {
-	printf("%%f vs %%g vs putn\n");
+	printf("%%f vs %%g vs printNum\n");
 
 	printf("\nPrinting 123456789.123456789\n");
 	printf("%%f: \t%f\n", 123456789.123456789);
@@ -12,7 +12,7 @@ int main(void) {
 	printf("%%.13f: \t%.13f\n", 123456789.123456789);
 	printf("%%.13g: \t%.13g\n", 123456789.123456789);
 	printf("putn: \t");
-	putn(123456789.123456789);
+	printNum(123456789.123456789);
 	printf("\n");
 
 	printf("\nPrinting 123456789101112.123\n");
@@ -21,7 +21,7 @@ int main(void) {
 	printf("%%.13f: \t%.13f\n", 123456789101112.123);
 	printf("%%.13g: \t%.13g\n", 123456789101112.123);
 	printf("putn: \t");
-	putn(123456789101112.123);
+	printNum(123456789101112.123);
 	printf("\n");
 
 	return 0;

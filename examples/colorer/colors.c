@@ -4,26 +4,24 @@
 #include <noch/colorer.c>
 
 int main(void) {
-	init_color();
-
 	printf("Colored output: ");
-	set_color(COLOR_RED, COLOR_BRIGHT_WHITE);
+	colorSet(COLOR_RED, COLOR_BRIGHT_WHITE);
 	printf("Hello, world!");
-	reset_color();
+	colorReset();
 	printf("\n");
 
 	printf("Highlight foreground: ");
-	highlight_fg();
+	colorHighlight();
 	printf("Hello, world!");
-	reset_color();
+	colorReset();
 	printf("\n");
 
-	printf_color("Color format function: #fW#brH#bye#bgl#bcl#bbo#bm,#X#! world!#X\n");
+	colorPrint("Color format function: [W][*r]H[*y]e[*g]l[*c]l[*b]o[*m],[.] [!]world![.]\n");
 
 	fprintf(stderr, "Stream-specific colored output: ");
-	fset_color(stderr, COLOR_RED, COLOR_BRIGHT_WHITE);
+	colorSetF(stderr, COLOR_RED, COLOR_BRIGHT_WHITE);
 	fprintf(stderr, "Hello, world!");
-	freset_color(stderr);
+	colorResetF(stderr);
 	fprintf(stderr, "\n");
 
 	return 0;

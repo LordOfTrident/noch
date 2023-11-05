@@ -13,45 +13,36 @@ const char *usages[] = {
 	"horizontal [OPTIONS]    Draw a horizontal line",
 };
 
-const char *app_path;
+const char *argv0;
 
-bool   flag_h = false, flag_v = false;
-size_t flag_l = 6;
-char   flag_c = '#';
+bool   fHelp   = false, fVersion = false;
+size_t fLength = 6;
+char   fChar   = '#';
 
-void fprint_usage(FILE *file) {
-	args_usage_fprint(file, app_path, usages, sizeof(usages) / sizeof(*usages), DESC, true);
+void usage(FILE *file) {
+	argsUsage(file, argv0, usages, sizeof(usages) / sizeof(*usages), DESC, true);
 }
 
-void fprint_version(FILE *file) {
+void version(FILE *file) {
 	fprintf(file, "Version x.y.z\n");
 }
 
-void parse_options(args_t *args) {
-	size_t where;
-	bool   extra;
-	if (args_parse_flags(args, &where, NULL, &extra) != 0) {
-		/* NOCH_ERR_OUT_OF_MEM error cannot happen, because we are not expecting the stripped
-		   arguments. So we dont need to assert this.
-		assert(noch_get_err() != NOCH_ERR_OUT_OF_MEM); */
-
-		fprintf(stderr, "Error: '%s': %s\n", args->v[where], noch_get_err_msg());
-		exit(EXIT_FAILURE);
-	} else if (extra) {
-		fprintf(stderr, "Error: '%s': Unexpected argument\n", args->v[where]);
+void parseOptions(Args *args) {
+	if (argsParseFlags(args, NULL) != 0) {
+		fprintf(stderr, "Error: %s\n", nochGetError());
 		exit(EXIT_FAILURE);
 	}
 
-	if (flag_h) {
-		fprint_usage(stdout);
+	if (fHelp) {
+		usage(stdout);
 		exit(0);
-	} else if (flag_v) {
-		fprint_version(stdout);
+	} else if (fVersion) {
+		version(stdout);
 		exit(0);
 	}
 }
 
-void draw_vertical(char ch, size_t len) {
+void drawVertical(char ch, size_t len) {
 	if (len == 0)
 		return;
 
@@ -68,7 +59,7 @@ void draw_vertical(char ch, size_t len) {
 	}
 }
 
-void draw_horizontal(char ch, size_t len) {
+void drawHorizontal(char ch, size_t len) {
 	if (len == 0)
 		return;
 
@@ -88,31 +79,31 @@ void draw_horizontal(char ch, size_t len) {
 }
 
 int main(int argc, const char **argv) {
-	args_t args = args_new(argc, argv);
-	app_path    = args_shift(&args);
+	Args args = argsNew(argc, argv);
+	argv0     = argsShift(&args);
 
-	flag_bool("h", "help",    "Show the usage",   &flag_h);
-	flag_bool("v", "version", "Show the version", &flag_v);
-	flag_size("l", "length",  "Line length",      &flag_l);
-	flag_char("c", "char",    "Line character",   &flag_c);
+	flagBool("h", "help",    "Show the usage",   &fHelp);
+	flagBool("v", "version", "Show the version", &fVersion);
+	flagSize("l", "length",  "Line length",      &fLength);
+	flagChar("c", "char",    "Line character",   &fChar);
 
 	if (args.c > 0) {
 		if (strcmp(args.v[0], "vertical") == 0) {
-			args_shift(&args);
-			parse_options(&args);
+			argsShift(&args);
+			parseOptions(&args);
 
-			draw_vertical(flag_c, flag_l);
+			drawVertical(fChar, fLength);
 			return 0;
 		} else if (strcmp(args.v[0], "horizontal") == 0) {
-			args_shift(&args);
-			parse_options(&args);
+			argsShift(&args);
+			parseOptions(&args);
 
-			draw_horizontal(flag_c, flag_l);
+			drawHorizontal(fChar, fLength);
 			return 0;
 		} else
-			parse_options(&args);
+			parseOptions(&args);
 	}
 
-	fprint_usage(stderr);
+	usage(stderr);
 	return EXIT_FAILURE;
 }

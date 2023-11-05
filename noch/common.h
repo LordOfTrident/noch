@@ -4,24 +4,28 @@
 extern "C" {
 #endif
 
-#ifndef __cplusplus
-#	include <stdbool.h> /* bool, true, false */
-#endif
-
-#include <stdlib.h> /* exit, EXIT_FAILURE */
-#include <stdio.h>  /* fprintf, stderr */
-#include <string.h> /* memset, strlen, strcpy */
+#include <stdlib.h>  /* exit, EXIT_FAILURE */
+#include <stdio.h>   /* fprintf, stderr */
+#include <string.h>  /* memset, strlen, strcpy */
+#include <stdbool.h> /* bool, true, false */
 
 #include "internal/def.h"
-#include "internal/err.h"
 
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
 #endif
 
-#define UNUSED(X)      (void)X
-#define ARRAY_LEN(X)   (sizeof(X) / sizeof(*(X)))
-#define ZERO_STRUCT(X) memset(X, 0, sizeof(*(X)))
+#ifndef NAN
+#	define NAN (0.0 / 0.0)
+#endif
+
+#ifndef INFINITY
+#	define INFINITY (1.0 / 0.0)
+#endif
+
+#define UNUSED(X)    (void)X
+#define ARRAY_LEN(X) (sizeof(X) / sizeof(*(X)))
+#define zeroInit(X)  memset(X, 0, sizeof(*(X)))
 
 #define SWAP(A, B, T) \
 	do {              \
@@ -40,10 +44,10 @@ extern "C" {
 	 fprintf(stderr, "\n"),                                \
 	 exit(EXIT_FAILURE))
 
-NOCH_DEF char *xstrdup(const char *str);
+NOCH_DEF char *stringDup(const char *str);
+NOCH_DEF void  printNumF(FILE *file, double num);
 
-NOCH_DEF void fputn(double num, FILE *file);
-NOCH_DEF void putn (double num);
+#define printNum(NUM) printNumF(stdout, NUM)
 
 #ifdef __cplusplus
 }

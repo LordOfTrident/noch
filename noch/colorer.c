@@ -2,25 +2,11 @@
 extern "C" {
 #endif
 
-#include "internal/private.h"
-
 #include "colorer.h"
-
-#define fg_color_to_attr NOCH_PRIV(fg_color_to_attr)
-#define bg_color_to_attr NOCH_PRIV(bg_color_to_attr)
-#define fg_color         NOCH_PRIV(fg_color)
-#define bg_color         NOCH_PRIV(bg_color)
-#define stdout_handle    NOCH_PRIV(stdout_handle)
-#define stderr_handle    NOCH_PRIV(stderr_handle)
-#define prev_csbi        NOCH_PRIV(prev_csbi)
-#define file_to_handle   NOCH_PRIV(file_to_handle)
-#define fg_color_to_ansi NOCH_PRIV(fg_color_to_ansi)
-#define bg_color_to_ansi NOCH_PRIV(bg_color_to_ansi)
-#define has_color        NOCH_PRIV(has_color)
 
 #ifdef PLATFORM_WINDOWS
 
-static WORD NOCH_PRIV(fg_color_to_attr)[] = {
+static WORD fgColorToAttr[] = {
 	/* COLOR_BLACK   */ 0,
 	/* COLOR_RED     */ FOREGROUND_RED,
 	/* COLOR_GREEN   */ FOREGROUND_GREEN,
@@ -41,7 +27,7 @@ static WORD NOCH_PRIV(fg_color_to_attr)[] = {
 	                           FOREGROUND_INTENSITY,
 };
 
-static WORD NOCH_PRIV(bg_color_to_attr)[] = {
+static WORD bgColorToAttr[] = {
 	/* COLOR_BLACK   */ 0,
 	/* COLOR_RED     */ BACKGROUND_RED,
 	/* COLOR_GREEN   */ BACKGROUND_GREEN,
@@ -62,26 +48,26 @@ static WORD NOCH_PRIV(bg_color_to_attr)[] = {
 	                           BACKGROUND_INTENSITY,
 };
 
-static WORD NOCH_PRIV(fg_color) = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
-static WORD NOCH_PRIV(bg_color) = 0;
+static WORD fgColor = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
+static WORD bgColor = 0;
 
-static HANDLE NOCH_PRIV(stdout_handle);
-static HANDLE NOCH_PRIV(stderr_handle);
+static HANDLE stdoutHandle;
+static HANDLE stderrHandle;
 
-static CONSOLE_SCREEN_BUFFER_INFO NOCH_PRIV(prev_csbi);
+static CONSOLE_SCREEN_BUFFER_INFO prevCsbi;
 
-static HANDLE NOCH_PRIV(file_to_handle)(FILE *file) {
+static HANDLE fileToHandle(FILE *file) {
 	if (file == stdout)
-		return stdout_handle;
+		return stdoutHandle;
 	else if (file == stderr)
-		return stderr_handle;
+		return stderrHandle;
 	else
 		return INVALID_HANDLE_VALUE;
 }
 
 #else
 
-static const char *NOCH_PRIV(fg_color_to_ansi)[] = {
+static const char *fgColorToAnsi[] = {
 	/* COLOR_BLACK   */ "\x1b[30m",
 	/* COLOR_RED     */ "\x1b[31m",
 	/* COLOR_GREEN   */ "\x1b[32m",
@@ -101,7 +87,7 @@ static const char *NOCH_PRIV(fg_color_to_ansi)[] = {
 	/* COLOR_BRIGHT_WHITE   */ "\x1b[97m",
 };
 
-static const char *NOCH_PRIV(bg_color_to_ansi)[] = {
+static const char *bgColorToAnsi[] = {
 	/* COLOR_BLACK   */ "\x1b[40m",
 	/* COLOR_RED     */ "\x1b[41m",
 	/* COLOR_GREEN   */ "\x1b[42m",
@@ -123,71 +109,93 @@ static const char *NOCH_PRIV(bg_color_to_ansi)[] = {
 
 #endif
 
-static bool NOCH_PRIV(has_color)(FILE *file) {
+static bool colorIsInit = false;
+
+static bool hasColor(FILE *file) {
 	return file == stdout || file == stderr;
 }
 
-NOCH_DEF void init_color(void) {
+static void colorInit(void) {
 #ifdef PLATFORM_WINDOWS
-	stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-	stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+	stdoutHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+	stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
 
-	GetConsoleScreenBufferInfo(stdout_handle, &prev_csbi);
+	GetConsoleScreenBufferInfo(stdoutHandle, &prevCsbi);
 #endif
+
+	colorIsInit = true;
 }
 
-NOCH_DEF void freset_color(FILE *file) {
-	if (!has_color(file))
+NOCH_DEF void colorResetF(FILE *file) {
+	if (!colorIsInit)
+		colorInit();
+
+	if (!hasColor(file))
 		return;
 
 #ifdef PLATFORM_WINDOWS
-	SetConsoleTextAttribute(file_to_handle(file), prev_csbi.wAttributes);
+	SetConsoleTextAttribute(fileToHandle(file), prevCsbi.wAttributes);
 #else
-	fputs("\x1b[0m", file);
+	fprintf(file, "\x1b[0m");
 #endif
 }
 
-NOCH_DEF void fhighlight_fg(FILE *file) {
-	if (!has_color(file))
+NOCH_DEF void colorHighlightF(FILE *file) {
+	if (!colorIsInit)
+		colorInit();
+
+	if (!hasColor(file))
 		return;
 
 #ifdef PLATFORM_WINDOWS
-	fg_color |= FOREGROUND_INTENSITY;
+	fgColor |= FOREGROUND_INTENSITY;
 #else
-	fputs("\x1b[1m", file);
+	fprintf(file, "\x1b[1m");
 #endif
 }
 
-NOCH_DEF void fset_fg_color(FILE *file, int color) {
-	if (!has_color(file))
+NOCH_DEF void colorSetFgF(FILE *file, int color) {
+	if (!colorIsInit)
+		colorInit();
+
+	if (!hasColor(file))
 		return;
 
 #ifdef WIN32
-	fg_color = fg_color_to_attr[color];
-	SetConsoleTextAttribute(file_to_handle(file), fg_color | bg_color);
+	fgColor = fgColorToAttr[color];
+	SetConsoleTextAttribute(fileToHandle(file), fgColor | bgColor);
 #else
-	fputs(fg_color_to_ansi[color], file);
+	fprintf(file, "%s", fgColorToAnsi[color]);
 #endif
 }
 
-NOCH_DEF void fset_bg_color(FILE *file, int color) {
-	if (!has_color(file))
+NOCH_DEF void colorSetBgF(FILE *file, int color) {
+	if (!colorIsInit)
+		colorInit();
+
+	if (!hasColor(file))
 		return;
 
 #ifdef WIN32
-	bg_color = bg_color_to_attr[color];
-	SetConsoleTextAttribute(file_to_handle(file), fg_color | bg_color);
+	bgColor = bgColorToAttr[color];
+	SetConsoleTextAttribute(file_to_handle(file), fgColor | bgColor);
 #else
-	fputs(bg_color_to_ansi[color], file);
+	fprintf(file, "%s", bgColorToAnsi[color]);
 #endif
 }
 
-NOCH_DEF void fset_color(FILE *file, int fg, int bg) {
-	fset_fg_color(file, fg);
-	fset_bg_color(file, bg);
+NOCH_DEF void colorSetF(FILE *file, int fg, int bg) {
+	if (!colorIsInit)
+		colorInit();
+
+	colorSetFgF(file, fg);
+	colorSetBgF(file, bg);
 }
 
-NOCH_DEF void fprintf_color(FILE *file, const char *fmt, ...) {
+NOCH_DEF void colorPrintF(FILE *file, const char *fmt, ...) {
+	if (!colorIsInit)
+		colorInit();
+
 	char    str[1024];
 	va_list args;
 
@@ -195,101 +203,79 @@ NOCH_DEF void fprintf_color(FILE *file, const char *fmt, ...) {
 	vsnprintf(str, sizeof(str), fmt, args);
 	va_end(args);
 
-	bool escape = false, get_color = false, bg = false;
-	for (const char *ch = str; *ch != '\0'; ++ ch) {
-		if (escape) {
-			escape = false;
-
-			switch (*ch) {
-			case '#': fputc('#', file);    break;
-			case 'X': freset_color(file);  break;
-			case '!': fhighlight_fg(file); break;
-
-			case 'f': get_color = true; bg = false; break;
-			case 'b': get_color = true; bg = true;  break;
-
-			default:
-				fputc('#', file);
-				fputc(*ch, file);
-			}
-		} else if (get_color) {
-			get_color = false;
-
-			void (*color_func)(FILE*, int) = bg? fset_bg_color : fset_fg_color;
-
-			switch (*ch) {
-			case 'o': color_func(file, COLOR_BLACK);   break;
-			case 'r': color_func(file, COLOR_RED);     break;
-			case 'g': color_func(file, COLOR_GREEN);   break;
-			case 'y': color_func(file, COLOR_YELLOW);  break;
-			case 'b': color_func(file, COLOR_BLUE);    break;
-			case 'm': color_func(file, COLOR_MAGENTA); break;
-			case 'c': color_func(file, COLOR_CYAN);    break;
-			case 'w': color_func(file, COLOR_WHITE);   break;
-
-			case 'O': color_func(file, COLOR_GREY);           break;
-			case 'R': color_func(file, COLOR_BRIGHT_RED);     break;
-			case 'G': color_func(file, COLOR_BRIGHT_GREEN);   break;
-			case 'Y': color_func(file, COLOR_BRIGHT_YELLOW);  break;
-			case 'B': color_func(file, COLOR_BRIGHT_BLUE);    break;
-			case 'M': color_func(file, COLOR_BRIGHT_MAGENTA); break;
-			case 'C': color_func(file, COLOR_BRIGHT_CYAN);    break;
-			case 'W': color_func(file, COLOR_BRIGHT_WHITE);   break;
-
-			default:
-				fputc('#', file);
-				fputc(bg? 'b' : 'f', file);
-				fputc(*ch, file);
-			}
-		} else if (*ch == '#')
+	bool escape = false;
+	for (const char *it = str; *it != '\0'; ++ it) {
+		if (*it == '\\' && it[1] == '[')
 			escape = true;
-		else
-			fputc(*ch, file);
+		else if (*it == '[' && !escape) {
+			int len = 0;
+			for (int i = 0; i < 3; ++ i) {
+				if (it[i + 1] == '\0')
+					break;
+				else if (it[i + 1] == ']') {
+					len = i;
+					break;
+				}
+			}
+			if (len == 0)
+				goto printAndContinue;
+
+			if      (it[1] == '.' && len == 1) colorResetF(file);
+			else if (it[1] == '!' && len == 1) colorHighlightF(file);
+			else {
+				bool bg = false;
+				char colorCode;
+				if (len == 2) {
+					if (it[1] == '*')
+						bg = true;
+					else if (it[1] == '!')
+						colorHighlightF(file);
+					else
+						goto printAndContinue;
+
+					colorCode = it[2];
+				} else
+					colorCode = it[1];
+
+				void (*colorFunc)(FILE*, int) = bg? colorSetBgF : colorSetFgF;
+
+				switch (colorCode) {
+				case 'o': colorFunc(file, COLOR_BLACK);   break;
+				case 'r': colorFunc(file, COLOR_RED);     break;
+				case 'g': colorFunc(file, COLOR_GREEN);   break;
+				case 'y': colorFunc(file, COLOR_YELLOW);  break;
+				case 'b': colorFunc(file, COLOR_BLUE);    break;
+				case 'm': colorFunc(file, COLOR_MAGENTA); break;
+				case 'c': colorFunc(file, COLOR_CYAN);    break;
+				case 'w': colorFunc(file, COLOR_WHITE);   break;
+
+				case 'O': colorFunc(file, COLOR_GREY);           break;
+				case 'R': colorFunc(file, COLOR_BRIGHT_RED);     break;
+				case 'G': colorFunc(file, COLOR_BRIGHT_GREEN);   break;
+				case 'Y': colorFunc(file, COLOR_BRIGHT_YELLOW);  break;
+				case 'B': colorFunc(file, COLOR_BRIGHT_BLUE);    break;
+				case 'M': colorFunc(file, COLOR_BRIGHT_MAGENTA); break;
+				case 'C': colorFunc(file, COLOR_BRIGHT_CYAN);    break;
+				case 'W': colorFunc(file, COLOR_BRIGHT_WHITE);   break;
+
+				default: goto printAndContinue;
+				}
+			}
+
+			it += len + 1;
+			continue;
+		} else if (escape) {
+			escape = false;
+			fprintf(file, "\\");
+		}
+
+	printAndContinue:
+		fprintf(file, "%c", *it);
 	}
+
+#undef MAX_FMT_LEN
+
 }
-
-NOCH_DEF void reset_color(void) {
-	freset_color(stdout);
-}
-
-NOCH_DEF void highlight_fg(void) {
-	fhighlight_fg(stdout);
-}
-
-NOCH_DEF void set_fg_color(int color) {
-	fset_fg_color(stdout, color);
-}
-
-NOCH_DEF void set_bg_color(int color) {
-	fset_bg_color(stdout, color);
-}
-
-NOCH_DEF void set_color(int fg, int bg) {
-	fset_color(stdout, fg, bg);
-}
-
-NOCH_DEF void printf_color(const char *fmt, ...) {
-	char    str[1024];
-	va_list args;
-
-	va_start(args, fmt);
-	vsnprintf(str, sizeof(str), fmt, args);
-	va_end(args);
-
-	fprintf_color(stdout, str);
-}
-
-#undef fg_color_to_attr
-#undef bg_color_to_attr
-#undef fg_color
-#undef bg_color
-#undef stdout_handle
-#undef stderr_handle
-#undef prev_csbi
-#undef file_to_handle
-#undef fg_color_to_ansi
-#undef bg_color_to_ansi
-#undef has_color
 
 #ifdef __cplusplus
 }

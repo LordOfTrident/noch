@@ -4,21 +4,21 @@ extern "C" {
 
 #include "internal/alloc.h"
 #include "internal/assert.h"
-#include "internal/err.c"
 
 #include "common.h"
 
-NOCH_DEF char *xstrdup(const char *str) {
+NOCH_DEF char *stringDup(const char *str) {
 	NOCH_ASSERT(str != NULL);
 
-	char *ptr;
-	NOCH_MUST_ALLOC(char, ptr, strlen(str) + 1);
+	char *ptr = (char*)nochAlloc(strlen(str) + 1);
+	if (ptr == NULL)
+		NOCH_OUT_OF_MEM();
 
 	strcpy(ptr, str);
 	return ptr;
 }
 
-NOCH_DEF void fputn(double num, FILE *file) {
+NOCH_DEF void printNumF(FILE *file, double num) {
 	char buf[256];
 	snprintf(buf, sizeof(buf), "%.13f", num);
 
@@ -28,29 +28,23 @@ NOCH_DEF void fputn(double num, FILE *file) {
 		if (buf[i] == '.' && !found)
 			found = true;
 	}
-	if (!found) {
-		fprintf(file, "%s", buf);
-		return;
-	} else
+
+	if (found) {
 		-- i;
+		while (true) {
+			if (buf[i] != '0') {
+				if (buf[i] == '.')
+					buf[i] = '\0';
 
-	while (true) {
-		if (buf[i] != '0') {
-			if (buf[i] == '.')
-				buf[i] = '\0';
+				break;
+			}
 
-			break;
+			buf[i] = '\0';
+			-- i;
 		}
-
-		buf[i] = '\0';
-		-- i;
 	}
 
 	fprintf(file, "%s", buf);
-}
-
-NOCH_DEF void putn(double num) {
-	fputn(num, stdout);
 }
 
 #ifdef __cplusplus
