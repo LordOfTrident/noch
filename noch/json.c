@@ -19,7 +19,7 @@ const char *jsonTypeToStringMap[JSON_TYPES_COUNT] = {
 };
 
 const char *jsonTypeToString(int type) {
-	NOCH_ASSERT(type < JSON_TYPES_COUNT && type >= 0);
+	nochAssert(type < JSON_TYPES_COUNT && type >= 0);
 	return jsonTypeToStringMap[type];
 }
 
@@ -30,7 +30,7 @@ NOCH_DEF Json *jsonNull(void) {
 }
 
 static char *jsonStringDup(const char *str) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 
 	char *ptr = (char*)nochAlloc(strlen(str) + 1);
 	if (ptr == NULL)
@@ -114,7 +114,7 @@ NOCH_DEF JsonObj *jsonNewObj(void) {
 }
 
 NOCH_DEF Json **jsonObjAt(JsonObj *this, const char *key) {
-	NOCH_ASSERT(this != NULL && key != NULL);
+	nochAssert(this != NULL && key != NULL);
 
 	for (size_t i = 0; i < this->size; ++ i) {
 		if (this->buckets[i].key == NULL)
@@ -128,7 +128,7 @@ NOCH_DEF Json **jsonObjAt(JsonObj *this, const char *key) {
 }
 
 NOCH_DEF Json **jsonListAt(JsonList *this, size_t idx) {
-	NOCH_ASSERT(this != NULL);
+	nochAssert(this != NULL);
 
 	if (idx >= this->size)
 		return NULL;
@@ -137,7 +137,7 @@ NOCH_DEF Json **jsonListAt(JsonList *this, size_t idx) {
 }
 
 NOCH_DEF Json **jsonObjSet_(JsonObj *this, const char *key, Json *json) {
-	NOCH_ASSERT(this != NULL && key != NULL);
+	nochAssert(this != NULL && key != NULL);
 
 	for (size_t i = 0; i < this->size; ++ i) {
 		if (this->buckets[i].key != NULL) {
@@ -169,7 +169,7 @@ NOCH_DEF Json **jsonObjSet_(JsonObj *this, const char *key, Json *json) {
 }
 
 NOCH_DEF int jsonObjRemove(JsonObj *this, const char *key) {
-	NOCH_ASSERT(this != NULL && key != NULL);
+	nochAssert(this != NULL && key != NULL);
 
 	for (size_t i = 0; i < this->size; ++ i) {
 		if (this->buckets[i].key == NULL)
@@ -190,7 +190,7 @@ NOCH_DEF int jsonObjRemove(JsonObj *this, const char *key) {
 }
 
 NOCH_DEF Json **jsonListPush_(JsonList *this, Json *json) {
-	NOCH_ASSERT(this != NULL && json != NULL);
+	nochAssert(this != NULL && json != NULL);
 
 	if (this->size >= this->cap) {
 		this->cap *= 2;
@@ -204,14 +204,14 @@ NOCH_DEF Json **jsonListPush_(JsonList *this, Json *json) {
 }
 
 NOCH_DEF void jsonListPop(JsonList *this) {
-	NOCH_ASSERT(this != NULL);
-	NOCH_ASSERT(this->size > 0);
+	nochAssert(this != NULL);
+	nochAssert(this->size > 0);
 
 	jsonDestroy(this->buf[-- this->size]);
 }
 
 NOCH_DEF void jsonDestroy_(Json *this) {
-	NOCH_ASSERT(this != NULL);
+	nochAssert(this != NULL);
 
 	switch (this->type) {
 	case JSON_NULL: return;
@@ -247,7 +247,7 @@ NOCH_DEF void jsonDestroy_(Json *this) {
 		nochFree(obj->buckets);
 	} break;
 
-	default: NOCH_ASSERT(0 && "Unknown JSON type");
+	default: nochAssert(0 && "Unknown JSON type");
 	}
 
 	nochFree(this);
@@ -368,7 +368,7 @@ static void jsonIndent(JsonOutputStream *this, size_t size) {
 }
 
 static void jsonOutputJson(JsonOutputStream *this, Json *json, size_t indentSize, bool comma) {
-	NOCH_ASSERT(this != NULL && json != NULL);
+	nochAssert(this != NULL && json != NULL);
 
 	switch (json->type) {
 	case JSON_NULL:   jsonOutput(this, "null"); break;
@@ -411,7 +411,7 @@ static void jsonOutputJson(JsonOutputStream *this, Json *json, size_t indentSize
 		jsonOutput(this, "}");
 	} break;
 
-	default: NOCH_ASSERT(0 && "Unknown JSON type");
+	default: nochAssert(0 && "Unknown JSON type");
 	}
 
 	if (comma)
@@ -421,7 +421,7 @@ static void jsonOutputJson(JsonOutputStream *this, Json *json, size_t indentSize
 }
 
 NOCH_DEF void jsonPrintF_(Json *this, FILE *file) {
-	NOCH_ASSERT(this != NULL && file != NULL);
+	nochAssert(this != NULL && file != NULL);
 
 	JsonOutputStream outputStream = {0};
 	outputStream.file = file;
@@ -430,7 +430,7 @@ NOCH_DEF void jsonPrintF_(Json *this, FILE *file) {
 }
 
 NOCH_DEF char *jsonStringify_(Json *this) {
-	NOCH_ASSERT(this != NULL);
+	nochAssert(this != NULL);
 
 	JsonOutputStream outputStream = {0};
 	outputStream.cap = 256;
@@ -465,7 +465,7 @@ static int jsonError(JsonParser *this, size_t row, size_t col, const char *fmt, 
 
 /* Not standard!!!! but very useful */
 static int jsonSkipComment(JsonParser *this) {
-	NOCH_ASSERT(*this->it == '/' && this->it[1] == '*');
+	nochAssert(*this->it == '/' && this->it[1] == '*');
 
 	size_t row = this->row, col = JSON_COL(this);
 
@@ -505,7 +505,7 @@ static int jsonSkipWhitespacesAndComments(JsonParser *this) {
 }
 
 static int jsonParseHex4(JsonParser *this, uint16_t *ret) {
-	NOCH_ASSERT(ret != NULL);
+	nochAssert(ret != NULL);
 
 	char buf[5] = {0};
 	for (size_t i = 0; i < 4; ++ i) {
@@ -574,7 +574,7 @@ static int jsonParseUnicodeSequence(JsonParser *this, char *str, size_t *end) {
 }
 
 static char *jsonEscapeString(JsonParser *this) {
-	NOCH_ASSERT(*this->it == '"');
+	nochAssert(*this->it == '"');
 
 	size_t col = JSON_COL(this);
 
@@ -648,7 +648,7 @@ static char *jsonEscapeString(JsonParser *this) {
 static Json *jsonParseAtom(JsonParser *this);
 
 static Json *jsonParseObj(JsonParser *this) {
-	NOCH_ASSERT(*this->it == '{');
+	nochAssert(*this->it == '{');
 
 	size_t startRow = this->row, startCol = JSON_COL(this);
 
@@ -713,7 +713,7 @@ fail:
 }
 
 static Json *jsonParseList(JsonParser *this) {
-	NOCH_ASSERT(*this->it == '[');
+	nochAssert(*this->it == '[');
 
 	size_t startRow = this->row, startCol = JSON_COL(this);
 
@@ -756,7 +756,7 @@ static bool stringViewEqualsString(const char *view, size_t len, const char *str
 }
 
 static Json *jsonParseId(JsonParser *this) {
-	NOCH_ASSERT(isalpha(*this->it));
+	nochAssert(isalpha(*this->it));
 
 	size_t col = JSON_COL(this);
 
@@ -784,7 +784,7 @@ static Json *jsonParseString(JsonParser *this) {
 }
 
 static Json *jsonParseNumber(JsonParser *this) {
-	NOCH_ASSERT(isdigit(*this->it) || *this->it == '-');
+	nochAssert(isdigit(*this->it) || *this->it == '-');
 
 	bool exponent = false, floatingPoint = false;
 
@@ -896,7 +896,7 @@ static Json *jsonParse(const char *str, const char *path) {
 }
 
 NOCH_DEF Json *jsonFromFile(const char *path) {
-	NOCH_ASSERT(path != NULL);
+	nochAssert(path != NULL);
 
 	FILE *file = fopen(path, "r");
 	if (file == NULL) {
@@ -931,7 +931,7 @@ NOCH_DEF Json *jsonFromFile(const char *path) {
 }
 
 NOCH_DEF Json *jsonFromString(const char *str) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 	return jsonParse(str, NULL);
 }
 

@@ -88,11 +88,11 @@ typedef struct {
 	size_t  argsCount;
 } MeFunc;
 
-#define ME_NUMBER(EXPR) (NOCH_ASSERT((EXPR)->type == ME_NUMBER), (MeNumber*)(EXPR))
-#define ME_UNARY(EXPR)  (NOCH_ASSERT((EXPR)->type == ME_UNARY),  (MeUnary*) (EXPR))
-#define ME_BINARY(EXPR) (NOCH_ASSERT((EXPR)->type == ME_BINARY), (MeBinary*)(EXPR))
-#define ME_ID(EXPR)     (NOCH_ASSERT((EXPR)->type == ME_ID),     (MeId*)    (EXPR))
-#define ME_FUNC(EXPR)   (NOCH_ASSERT((EXPR)->type == ME_FUNC),   (MeFunc*)  (EXPR))
+#define ME_NUMBER(EXPR) (nochAssert((EXPR)->type == ME_NUMBER), (MeNumber*)(EXPR))
+#define ME_UNARY(EXPR)  (nochAssert((EXPR)->type == ME_UNARY),  (MeUnary*) (EXPR))
+#define ME_BINARY(EXPR) (nochAssert((EXPR)->type == ME_BINARY), (MeBinary*)(EXPR))
+#define ME_ID(EXPR)     (nochAssert((EXPR)->type == ME_ID),     (MeId*)    (EXPR))
+#define ME_FUNC(EXPR)   (nochAssert((EXPR)->type == ME_FUNC),   (MeFunc*)  (EXPR))
 
 enum {
 	ME_INCLUDE_DEFAULT_FUNCS  = 1 << 2,

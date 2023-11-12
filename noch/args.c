@@ -9,7 +9,7 @@ extern "C" {
 #include "args.h"
 
 NOCH_DEF bool argIsFlag(const char *arg) {
-	NOCH_ASSERT(arg != NULL);
+	nochAssert(arg != NULL);
 
 	if (strlen(arg) > 1)
 		return arg[0] == '-' && !argIsFlagsEnd(arg);
@@ -18,7 +18,7 @@ NOCH_DEF bool argIsFlag(const char *arg) {
 }
 
 NOCH_DEF bool argIsLongFlag(const char *arg) {
-	NOCH_ASSERT(arg != NULL);
+	nochAssert(arg != NULL);
 
 	if (strlen(arg) > 2)
 		return arg[0] == '-' && arg[1] == '-';
@@ -27,7 +27,7 @@ NOCH_DEF bool argIsLongFlag(const char *arg) {
 }
 
 NOCH_DEF bool argIsFlagsEnd(const char *arg) {
-	NOCH_ASSERT(arg != NULL);
+	nochAssert(arg != NULL);
 
 	return strcmp(arg, "--") == 0;
 }
@@ -101,8 +101,8 @@ static Flag *getFlagByLongName(const char *longName) {
 }
 
 static int argToChar(const char *arg, char *var) {
-	NOCH_ASSERT(arg != NULL);
-	NOCH_ASSERT(var != NULL);
+	nochAssert(arg != NULL);
+	nochAssert(var != NULL);
 
 	if (strlen(arg) != 1)
 		return -1;
@@ -112,8 +112,8 @@ static int argToChar(const char *arg, char *var) {
 }
 
 static int argToInt(const char *arg, int *var) {
-	NOCH_ASSERT(arg != NULL);
-	NOCH_ASSERT(var != NULL);
+	nochAssert(arg != NULL);
+	nochAssert(var != NULL);
 
 	char *ptr;
 	*var = (int)strtol(arg, &ptr, 10);
@@ -121,8 +121,8 @@ static int argToInt(const char *arg, int *var) {
 }
 
 static int argToSize(const char *arg, size_t *var) {
-	NOCH_ASSERT(arg != NULL);
-	NOCH_ASSERT(var != NULL);
+	nochAssert(arg != NULL);
+	nochAssert(var != NULL);
 
 	char *ptr;
 	*var = (size_t)strtoull(arg, &ptr, 10);
@@ -130,8 +130,8 @@ static int argToSize(const char *arg, size_t *var) {
 }
 
 static int argToNum(const char *arg, double *var) {
-	NOCH_ASSERT(arg != NULL);
-	NOCH_ASSERT(var != NULL);
+	nochAssert(arg != NULL);
+	nochAssert(var != NULL);
 
 	char *ptr;
 	*var = (double)strtod(arg, &ptr);
@@ -159,8 +159,8 @@ static bool argEquals(const char *a, const char *b) {
 	 argEquals(STR, D))
 
 static int argToBool(const char *arg, bool *var) {
-	NOCH_ASSERT(arg != NULL);
-	NOCH_ASSERT(var != NULL);
+	nochAssert(arg != NULL);
+	nochAssert(var != NULL);
 
 	if (ARG_EQUALS_4(arg, "true",  "1", "yes", "y"))
 		*var = true;
@@ -176,8 +176,8 @@ static int argToBool(const char *arg, bool *var) {
 
 /* Set the flags value from an arg. Type is automatically assumed from the flag type */
 static int setFlagFromArg(Flag *flag, const char *arg, const char *orig) {
-	NOCH_ASSERT(flag != NULL);
-	NOCH_ASSERT(arg  != NULL);
+	nochAssert(flag != NULL);
+	nochAssert(arg  != NULL);
 
 #define FLAG_SET(FIELD, FUNC, ...)           \
 	do {                                     \
@@ -185,7 +185,7 @@ static int setFlagFromArg(Flag *flag, const char *arg, const char *orig) {
 			return nochError(__VA_ARGS__);   \
 	} while (0)
 
-	NOCH_ASSERT(flag->type < FLAG_TYPE_COUNT);
+	nochAssert(flag->type < FLAG_TYPE_COUNT);
 
 	switch (flag->type) {
 	case FLAG_STRING: *flag->var.str = arg; break;
@@ -195,7 +195,7 @@ static int setFlagFromArg(Flag *flag, const char *arg, const char *orig) {
 	case FLAG_NUM:  FLAG_SET(num,   argToNum,  "\"%s\": Expected a number",    orig); break;
 	case FLAG_BOOL: FLAG_SET(boolx, argToBool, "\"%s\": Expected a boolean",   orig); break;
 
-	default: NOCH_ASSERT(0 && "Unknown flag type");
+	default: nochAssert(0 && "Unknown flag type");
 	}
 
 #undef FLAG_SET
@@ -206,12 +206,12 @@ static int setFlagFromArg(Flag *flag, const char *arg, const char *orig) {
 #define IMPL_FLAG_FUNC(POSTFIX, TYPE, FLAG_TYPE, FIELD)                      \
 	NOCH_DEF void flag##POSTFIX(const char *shortName, const char *longName, \
 	                            const char *desc, TYPE *var) {               \
-		NOCH_ASSERT(var != NULL);                                            \
-		NOCH_ASSERT(flagsCount < FLAGS_CAPACITY);                            \
+		nochAssert(var != NULL);                                             \
+		nochAssert(flagsCount < FLAGS_CAPACITY);                             \
 		if (shortName != NULL)                                               \
-			NOCH_ASSERT(strlen(shortName) <= MAX_FLAG_NAME_LEN);             \
+			nochAssert(strlen(shortName) <= MAX_FLAG_NAME_LEN);              \
 		if (longName != NULL)                                                \
-			NOCH_ASSERT(strlen(longName)  <= MAX_FLAG_NAME_LEN);             \
+			nochAssert(strlen(longName)  <= MAX_FLAG_NAME_LEN);              \
 		                                                                     \
 		Flag *flag = &flags[flagsCount ++];                                  \
 		flag->type             = FLAG_TYPE;                                  \
@@ -232,7 +232,7 @@ IMPL_FLAG_FUNC(Bool,   bool,        FLAG_BOOL,   boolx)
 #undef IMPL_FLAG_FUNC
 
 NOCH_DEF Args argsNew(int argc, const char **argv) {
-	NOCH_ASSERT(argv != NULL);
+	nochAssert(argv != NULL);
 
 	Args a;
 	a.c    = (size_t)argc;
@@ -242,7 +242,7 @@ NOCH_DEF Args argsNew(int argc, const char **argv) {
 }
 
 NOCH_DEF const char *argsShift(Args *args) {
-	NOCH_ASSERT(args != NULL);
+	nochAssert(args != NULL);
 
 	if (args->c <= 0)
 		return NULL;
@@ -253,7 +253,7 @@ NOCH_DEF const char *argsShift(Args *args) {
 }
 
 NOCH_DEF int argsParseFlags(Args *args, Args *stripped) {
-	NOCH_ASSERT(args != NULL);
+	nochAssert(args != NULL);
 
 	/* If stripped args are expected to be returned, allocate memory for them
 	   (allocate the same size as the original arguments so we dont have to do any reallocs) */
@@ -349,7 +349,7 @@ NOCH_DEF int argsParseFlags(Args *args, Args *stripped) {
 }
 
 NOCH_DEF void flagsUsage(FILE *file) {
-	NOCH_ASSERT(file != NULL);
+	nochAssert(file != NULL);
 
 	if (flagsCount == 0)
 		return;
@@ -405,7 +405,7 @@ NOCH_DEF void flagsUsage(FILE *file) {
 			continue;
 		}
 
-		NOCH_ASSERT(flag->type < FLAG_TYPE_COUNT);
+		nochAssert(flag->type < FLAG_TYPE_COUNT);
 
 		fprintf(file, " (default \"");
 		switch (flag->type) {
@@ -416,7 +416,7 @@ NOCH_DEF void flagsUsage(FILE *file) {
 		case FLAG_NUM:   fprintf(file, "%f",  flag->defaultVal.num);                 break;
 		case FLAG_BOOL:  fprintf(file, "true");                                      break;
 
-		default: NOCH_ASSERT(0 && "Unknown flag type");
+		default: nochAssert(0 && "Unknown flag type");
 		}
 		fprintf(file, "\")\n");
 	}
@@ -429,10 +429,10 @@ NOCH_DEF void flagsUsage(FILE *file) {
 
 NOCH_DEF void argsUsage(FILE *file, const char *name, const char **usages,
                         size_t usagesCount, const char *desc, bool printFlags) {
-	NOCH_ASSERT(file != NULL);
+	nochAssert(file != NULL);
 
 	if (usages != NULL && usagesCount > 0) {
-		NOCH_ASSERT(name != NULL);
+		nochAssert(name != NULL);
 		for (size_t i = 0; i < usagesCount; ++ i)
 			fprintf(file, i == 0? "Usage: %s %s\n" : "       %s %s\n", name, usages[i]);
 

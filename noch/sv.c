@@ -24,7 +24,7 @@ NOCH_DEF StringView svFromString(const char *cstr) {
 }
 
 NOCH_DEF char svAt(StringView this, size_t idx) {
-	NOCH_ASSERT(idx < this.length);
+	nochAssert(idx < this.length);
 	return this.data[idx];
 }
 

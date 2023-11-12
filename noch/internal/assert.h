@@ -4,7 +4,7 @@
 #ifndef NOCH_ASSERT
 #	include <assert.h> /* assert */
 
-#	define NOCH_ASSERT(EXPR) assert(EXPR)
+#	define nochAssert(EXPR) assert(EXPR)
 #endif
 
 #endif

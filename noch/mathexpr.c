@@ -56,7 +56,7 @@ static MeId *meNewId(size_t pos, const char *value) {
 	this->base.pos    = pos;
 	this->base.type   = ME_ID;
 
-	NOCH_ASSERT(strlen(value) < ME_TOKEN_CAPACITY);
+	nochAssert(strlen(value) < ME_TOKEN_CAPACITY);
 	strcpy(this->value, value);
 	return this;
 }
@@ -71,7 +71,7 @@ static MeFunc *meNewFunc(size_t pos, const char *name) {
 	this->base.type   = ME_FUNC;
 	this->argsCount   = 0;
 
-	NOCH_ASSERT(strlen(name) < ME_TOKEN_CAPACITY);
+	nochAssert(strlen(name) < ME_TOKEN_CAPACITY);
 	strcpy(this->name, name);
 	return this;
 }
@@ -109,7 +109,7 @@ static double meDoUnaryOp(char op, double value) {
 	case ME_OP_ABS: return fabs(value);
 
 	default:
-		NOCH_ASSERT(0 && "Unknown MeUnary operator");
+		nochAssert(0 && "Unknown MeUnary operator");
 		return NAN;
 	}
 }
@@ -123,7 +123,7 @@ static double meDoBinaryOp(char op, double left, double right, size_t pos) {
 	case ME_OP_MOD: return meMod(pos, left, right);
 	case ME_OP_POW: return pow(left, right);
 
-	default: NOCH_ASSERT(0 && "Unknown MeUnary operator");
+	default: nochAssert(0 && "Unknown MeUnary operator");
 	}
 }
 
@@ -233,19 +233,19 @@ NOCH_DEF double meEval(MeExpr *this, MeDef *defs, size_t size) {
 	case ME_ID:     return meEvalId    (ME_ID(this),     defs, size);
 	case ME_FUNC:   return meEvalFunc  (ME_FUNC(this),   defs, size);
 
-	default: NOCH_ASSERT(0 && "Unknown MeExpr type");
+	default: nochAssert(0 && "Unknown MeExpr type");
 	}
 }
 
 static double meEvalLiteralUnary(MeUnary *unary) {
-	NOCH_ASSERT(unary->expr->type == ME_NUMBER);
+	nochAssert(unary->expr->type == ME_NUMBER);
 	double value = ME_NUMBER(unary->expr)->value;
 
 	return meDoUnaryOp(unary->op, value);
 }
 
 static double meEvalLiteralBinary(MeBinary *binary) {
-	NOCH_ASSERT(binary->left->type == ME_NUMBER && binary->right->type == ME_NUMBER);
+	nochAssert(binary->left->type == ME_NUMBER && binary->right->type == ME_NUMBER);
 	double left  = ME_NUMBER(binary->left)->value;
 	double right = ME_NUMBER(binary->right)->value;
 
@@ -364,7 +364,7 @@ NOCH_DEF void mePrintF(MeExpr *this, FILE *file, bool redundantParens) {
 		fprintf(file, ")");
 		break;
 
-	default: NOCH_ASSERT(0 && "Unknown MeExpr type");
+	default: nochAssert(0 && "Unknown MeExpr type");
 	}
 
 	if (this->parens || parens)
@@ -372,7 +372,7 @@ NOCH_DEF void mePrintF(MeExpr *this, FILE *file, bool redundantParens) {
 }
 
 NOCH_DEF void meDestroy(MeExpr *this) {
-	NOCH_ASSERT(this != NULL);
+	nochAssert(this != NULL);
 
 	switch (this->type) {
 	case ME_NUMBER: case ME_ID: break;
@@ -391,7 +391,7 @@ NOCH_DEF void meDestroy(MeExpr *this) {
 			meDestroy(ME_FUNC(this)->args[i]);
 		break;
 
-	default: NOCH_ASSERT(0 && "Unknown MeExpr type");
+	default: nochAssert(0 && "Unknown MeExpr type");
 	}
 
 	nochFree(this);
@@ -460,7 +460,7 @@ static MeExpr *meParseFactor(MeParser *this);
 static MeExpr *meParseExpr  (MeParser *this);
 
 static MeExpr *meParseId(MeParser *this) {
-	NOCH_ASSERT(isalpha(*this->it));
+	nochAssert(isalpha(*this->it));
 
 	size_t pos = ME_POS(this);
 
@@ -512,7 +512,7 @@ fail:
 }
 
 static MeExpr *meParseNumber(MeParser *this) {
-	NOCH_ASSERT(isdigit(*this->it));
+	nochAssert(isdigit(*this->it));
 
 	size_t pos = ME_POS(this);
 	bool exponent = false, floatingPoint = false;
@@ -563,7 +563,7 @@ static MeExpr *meParseNumber(MeParser *this) {
 }
 
 static MeExpr *meParseUnary(MeParser *this) {
-	NOCH_ASSERT(*this->it == '+' || *this->it == '-');
+	nochAssert(*this->it == '+' || *this->it == '-');
 
 	size_t pos = ME_POS(this);
 	char   op  = *this->it ++;
@@ -576,7 +576,7 @@ static MeExpr *meParseUnary(MeParser *this) {
 }
 
 static MeExpr *meParseParens(MeParser *this) {
-	NOCH_ASSERT(*this->it == '(' || *this->it == '[');
+	nochAssert(*this->it == '(' || *this->it == '[');
 
 	size_t pos     = ME_POS(this);
 	char   closing = *this->it ++ == '('? ')' : ']';
@@ -598,7 +598,7 @@ static MeExpr *meParseParens(MeParser *this) {
 }
 
 static MeExpr *meParsePipes(MeParser *this) {
-	NOCH_ASSERT(*this->it == '|');
+	nochAssert(*this->it == '|');
 
 	size_t pos = ME_POS(this);
 	++ this->it;
@@ -728,14 +728,14 @@ static MeExpr *meParseExpr(MeParser *this) {
 }
 
 NOCH_DEF MeExpr *meParse(const char *start, const char *end) {
-	NOCH_ASSERT(start != NULL);
+	nochAssert(start != NULL);
 
 	if (end == NULL)
 		end = start + strlen(start);
 	else {
-		NOCH_ASSERT(start <= end);
+		nochAssert(start <= end);
 		for (const char *it = start; it < end; ++ it)
-			NOCH_ASSERT(*it != '\0');
+			nochAssert(*it != '\0');
 	}
 
 	MeParser parser = {0};
@@ -804,7 +804,7 @@ NOCH_DEF MeDef meInclude(int what) {
 }
 
 NOCH_DEF MeDef meDefFunc(const char *name, MeNative native) {
-	NOCH_ASSERT(strlen(name) < ME_TOKEN_CAPACITY);
+	nochAssert(strlen(name) < ME_TOKEN_CAPACITY);
 
 	MeDef def  = {0};
 	def.type   = ME_DEF_FUNC;
@@ -814,7 +814,7 @@ NOCH_DEF MeDef meDefFunc(const char *name, MeNative native) {
 }
 
 NOCH_DEF MeDef meDefConst(const char *name, double value) {
-	NOCH_ASSERT(strlen(name) < ME_TOKEN_CAPACITY);
+	nochAssert(strlen(name) < ME_TOKEN_CAPACITY);
 
 	MeDef def = {0};
 	def.type  = ME_DEF_CONST;

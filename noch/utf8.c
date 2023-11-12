@@ -35,7 +35,7 @@ NOCH_DEF size_t getRuneSize(Rune rune) {
 }
 
 NOCH_DEF size_t runeToU8(Rune rune, char *str) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 
 	if (rune <= 0x7F) {
 		str[0] = rune;
@@ -60,7 +60,7 @@ NOCH_DEF size_t runeToU8(Rune rune, char *str) {
 }
 
 NOCH_DEF Rune runeFromU8(const char *str, size_t *size) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 
 	size_t runeSize = getCodepointSize(*str);
 
@@ -101,7 +101,7 @@ NOCH_DEF bool runeuneIsUpper(Rune rune) {
 }
 
 NOCH_DEF const char *stringU8Next(const char *str) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 
 	if (*str == '\0')
 		return NULL;
@@ -111,7 +111,7 @@ NOCH_DEF const char *stringU8Next(const char *str) {
 }
 
 NOCH_DEF const char *stringU8Prev(const char *str, const char *base) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 
 	do {
 		-- str;
@@ -123,12 +123,12 @@ NOCH_DEF const char *stringU8Prev(const char *str, const char *base) {
 }
 
 NOCH_DEF size_t stringU8Size(const char *str) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 	return strlen(str);
 }
 
 NOCH_DEF size_t stringU8Length(const char *str) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 
 	size_t len = 0;
 	while (*str != '\0') {
@@ -139,7 +139,7 @@ NOCH_DEF size_t stringU8Length(const char *str) {
 }
 
 NOCH_DEF const char *stringU8At(const char *str, size_t idx) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 
 	const char *it = str;
 	size_t      at = 0;
@@ -158,8 +158,8 @@ NOCH_DEF const char *stringU8At(const char *str, size_t idx) {
 }
 
 NOCH_DEF const char *stringU8FindSub(const char *str, const char *find, size_t *idx, bool cs) {
-	NOCH_ASSERT(str  != NULL);
-	NOCH_ASSERT(find != NULL);
+	nochAssert(str  != NULL);
+	nochAssert(find != NULL);
 
 	const char *it = str;
 	size_t      at = 0;
@@ -194,7 +194,7 @@ NOCH_DEF const char *stringU8FindSub(const char *str, const char *find, size_t *
 }
 
 NOCH_DEF const char *stringU8FindRune(const char *str, Rune find, size_t *idx, bool cs) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 
 	const char *it = str;
 	size_t      at = 0;

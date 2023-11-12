@@ -106,12 +106,12 @@ typedef struct {
 		}                                                              \
 	} while (0)
 
-#define JSON_STRING(JSON) (NOCH_ASSERT((JSON)->type == JSON_STRING), (JsonString*)(JSON))
-#define JSON_FLOAT(JSON)  (NOCH_ASSERT((JSON)->type == JSON_FLOAT),  (JsonFloat*) (JSON))
-#define JSON_INT(JSON)    (NOCH_ASSERT((JSON)->type == JSON_INT),    (JsonInt*)   (JSON))
-#define JSON_BOOL(JSON)   (NOCH_ASSERT((JSON)->type == JSON_BOOL),   (JsonBool*)  (JSON))
-#define JSON_LIST(JSON)   (NOCH_ASSERT((JSON)->type == JSON_LIST),   (JsonList*)  (JSON))
-#define JSON_OBJ(JSON)    (NOCH_ASSERT((JSON)->type == JSON_OBJ),    (JsonObj*)   (JSON))
+#define JSON_STRING(JSON) (nochAssert((JSON)->type == JSON_STRING), (JsonString*)(JSON))
+#define JSON_FLOAT(JSON)  (nochAssert((JSON)->type == JSON_FLOAT),  (JsonFloat*) (JSON))
+#define JSON_INT(JSON)    (nochAssert((JSON)->type == JSON_INT),    (JsonInt*)   (JSON))
+#define JSON_BOOL(JSON)   (nochAssert((JSON)->type == JSON_BOOL),   (JsonBool*)  (JSON))
+#define JSON_LIST(JSON)   (nochAssert((JSON)->type == JSON_LIST),   (JsonList*)  (JSON))
+#define JSON_OBJ(JSON)    (nochAssert((JSON)->type == JSON_OBJ),    (JsonObj*)   (JSON))
 
 NOCH_DEF Json *jsonNull(void);
 

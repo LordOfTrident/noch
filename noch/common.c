@@ -8,7 +8,7 @@ extern "C" {
 #include "common.h"
 
 NOCH_DEF char *stringDup(const char *str) {
-	NOCH_ASSERT(str != NULL);
+	nochAssert(str != NULL);
 
 	char *ptr = (char*)nochAlloc(strlen(str) + 1);
 	if (ptr == NULL)
