@@ -7,8 +7,6 @@
 #		undef  _POSIX_C_SOURCE
 #		define _POSIX_C_SOURCE 200112L
 #	endif
-#else
-#	define _POSIX_C_SOURCE 200112L
 #endif
 
 #ifdef _XOPEN_SOURCE
@@ -16,8 +14,6 @@
 #		undef  _XOPEN_SOURCE
 #		define _XOPEN_SOURCE 500
 #	endif
-#else
-#	define _XOPEN_SOURCE 500
 #endif
 
 #include <unistd.h>
